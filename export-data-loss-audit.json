@@ -1,0 +1,68 @@
+{
+  "sheetId": "sheet-1",
+  "rawCellData": {
+    "0": {
+      "0": {
+        "v": "Typed String 123",
+        "t": 1
+      },
+      "1": {
+        "v": 888,
+        "t": 2
+      }
+    },
+    "1": {
+      "0": {
+        "v": "Zero Value 0",
+        "t": 1
+      },
+      "1": {
+        "v": 0,
+        "t": 2
+      }
+    },
+    "2": {
+      "0": {
+        "f": "=B1+100"
+      }
+    }
+  },
+  "exportedCells": {
+    "R0C0": {
+      "rawCellPay": {
+        "v": "Typed String 123",
+        "t": 1
+      },
+      "valWritten": "Typed String 123"
+    },
+    "R0C1": {
+      "rawCellPay": {
+        "v": 888,
+        "t": 2
+      },
+      "valWritten": 888
+    },
+    "R1C0": {
+      "rawCellPay": {
+        "v": "Zero Value 0",
+        "t": 1
+      },
+      "valWritten": "Zero Value 0"
+    },
+    "R1C1": {
+      "rawCellPay": {
+        "v": 0,
+        "t": 2
+      },
+      "valWritten": 0
+    },
+    "R2C0": {
+      "rawCellPay": {
+        "f": "=B1+100"
+      },
+      "valWritten": {
+        "formula": "=B1+100"
+      }
+    }
+  }
+}

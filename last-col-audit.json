@@ -1,0 +1,13 @@
+{
+  "initialMaxCol": 0,
+  "newLastCol": 1,
+  "afterSheetColumnCount": 30,
+  "cellInMaxCol": {
+    "v": "LastColVal_1787233366504",
+    "t": 1
+  },
+  "cellInExtendedCol": {
+    "v": "ExtendedColVal_1787233366509",
+    "t": 1
+  }
+}

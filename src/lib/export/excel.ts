@@ -9,10 +9,18 @@ export async function exportWorkbookToExcel(
   onProgress?: (percent: number, message: string) => void
 ): Promise<Blob> {
   const api = univerAPI || (typeof window !== 'undefined' ? (window as any).univerAPI : null);
-  if (!api) throw new Error('Univer API engine is not ready.');
+  if (typeof window !== 'undefined') {
+    (window as any).exportWorkbookToExcel = exportWorkbookToExcel;
+  }
 
-  onProgress?.(2, 'Menyiapkan snapshot data spreadsheet...');
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  // Commit any active cell edit before snapshot so newly typed values are saved
+  try {
+    if (api.endEdit) {
+      api.endEdit();
+    } else if (api.getCommandService) {
+      api.getCommandService().executeCommand('sheet.command.set-activate-cell-edit', { active: false, save: true });
+    }
+  } catch (e) {}
 
   const activeWorkbook = api.getActiveWorkbook ? api.getActiveWorkbook() : (api.getActiveUniverSheet ? api.getActiveUniverSheet() : null);
   if (!activeWorkbook) throw new Error('No active workbook found in Univer.');

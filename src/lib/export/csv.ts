@@ -14,6 +14,15 @@ export async function exportActiveSheetToCSV(
   onProgress?.(2, 'Membaca snapshot active sheet...');
   await new Promise((resolve) => setTimeout(resolve, 0));
 
+  // Commit any active cell edit before snapshot so newly typed values in last column are saved
+  try {
+    if (api.endEdit) {
+      api.endEdit();
+    } else if (api.getCommandService) {
+      api.getCommandService().executeCommand('sheet.command.set-activate-cell-edit', { active: false, save: true });
+    }
+  } catch (e) {}
+
   const activeWorkbook = api.getActiveWorkbook ? api.getActiveWorkbook() : (api.getActiveUniverSheet ? api.getActiveUniverSheet() : null);
   if (!activeWorkbook) throw new Error('No active workbook to export.');
 

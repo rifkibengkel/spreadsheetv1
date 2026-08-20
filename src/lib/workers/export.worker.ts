@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import Papa from 'papaparse';
 
 self.onmessage = async (e: MessageEvent) => {
-  const { snapshot, format, activeSheetId } = e.data;
+  let { snapshot, format, activeSheetId } = e.data;
 
   try {
     if (format === 'csv') {
@@ -30,7 +30,13 @@ self.onmessage = async (e: MessageEvent) => {
           const cIdx = parseInt(cStr, 10);
           const cell = cols[cIdx];
           if (cell) {
-            rowArr[cIdx] = cell.v !== undefined && cell.v !== null ? String(cell.v) : '';
+            let strVal = '';
+            if (cell.v !== undefined && cell.v !== null) {
+              strVal = String(cell.v);
+            } else if (cell.p && cell.p.body && typeof cell.p.body.dataStream === 'string') {
+              strVal = cell.p.body.dataStream.replace(/[\r\n]+$/, '');
+            }
+            rowArr[cIdx] = strVal;
           }
         });
 
@@ -44,7 +50,7 @@ self.onmessage = async (e: MessageEvent) => {
       }
 
       // Early release snapshot memory
-      (snapshot as any) = null;
+      snapshot = null;
 
       self.postMessage({ type: 'PROGRESS', percent: 90, message: 'Meng-encode teks CSV...' });
       const csvText = Papa.unparse(rows);
@@ -91,7 +97,7 @@ self.onmessage = async (e: MessageEvent) => {
         const rowIndex = rowKeys[rIdx];
         const cols = cellDataRaw[rowIndex];
         if (cols) {
-          const colKeys = Object.keys(cols).map(Number);
+          const colKeys = Object.keys(cols).map(Number).sort((a, b) => a - b);
           for (let cIdx = 0; cIdx < colKeys.length; cIdx++) {
             const colIndex = colKeys[cIdx];
             const cellPay = cols[colIndex];
@@ -103,12 +109,20 @@ self.onmessage = async (e: MessageEvent) => {
               if (parsedFormula.startsWith('=')) {
                 parsedFormula = parsedFormula.substring(1);
               }
+              const formulaRes = cellPay.v !== undefined && cellPay.v !== null 
+                ? cellPay.v 
+                : (cellPay.p?.body?.dataStream ? cellPay.p.body.dataStream.replace(/[\r\n]+$/, '') : undefined);
               cell.value = {
                 formula: parsedFormula,
-                result: cellPay.v,
+                result: formulaRes,
               };
             } else if (cellPay.v !== undefined && cellPay.v !== null) {
               cell.value = cellPay.v;
+            } else if (cellPay.p && cellPay.p.body && typeof cellPay.p.body.dataStream === 'string') {
+              const rawText = cellPay.p.body.dataStream.replace(/[\r\n]+$/, '');
+              if (rawText.length > 0) {
+                cell.value = rawText;
+              }
             }
           }
         }
@@ -127,7 +141,7 @@ self.onmessage = async (e: MessageEvent) => {
     }
 
     // Release snapshot reference immediately after copying into ExcelJS DOM
-    (snapshot as any) = null;
+    snapshot = null;
 
     self.postMessage({ type: 'PROGRESS', percent: 85, message: 'Mengompresi data ke format .xlsx (Worker)...' });
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -138,8 +152,14 @@ self.onmessage = async (e: MessageEvent) => {
     // Release ExcelJS Workbook DOM immediately after writeBuffer
     exportWb = null;
 
+    const transferableBuffer = arrayBuffer instanceof ArrayBuffer ? arrayBuffer : (arrayBuffer as any)?.buffer;
+
     (self as any).postMessage({ type: 'PROGRESS', percent: 100, message: 'File Excel (.xlsx) selesai dibuat!' });
-    (self as any).postMessage({ type: 'COMPLETE', buffer: arrayBuffer }, [arrayBuffer]);
+    if (transferableBuffer instanceof ArrayBuffer) {
+      (self as any).postMessage({ type: 'COMPLETE', buffer: arrayBuffer }, [transferableBuffer]);
+    } else {
+      (self as any).postMessage({ type: 'COMPLETE', buffer: arrayBuffer });
+    }
   } catch (err: any) {
     (self as any).postMessage({
       type: 'ERROR',

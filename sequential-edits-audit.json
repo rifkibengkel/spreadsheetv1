@@ -1,0 +1,17 @@
+[
+  {
+    "editIndex": 1,
+    "mutationTimeMs": 1327,
+    "totalTimeMs": 2127.2999999970198
+  },
+  {
+    "editIndex": 2,
+    "mutationTimeMs": 945.9000000022352,
+    "totalTimeMs": 1748.1000000014901
+  },
+  {
+    "editIndex": 3,
+    "mutationTimeMs": 1055.6000000014901,
+    "totalTimeMs": 1862.6000000014901
+  }
+]

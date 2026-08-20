@@ -109,4 +109,9 @@ export function replaceUniverWorkbook(univerAPI: any, workbookData: Partial<IWor
   api.createUniverSheet(workbookData);
 }
 
+if (typeof window !== 'undefined') {
+  (window as any).importExcelToWorkbookDataAsync = importExcelToWorkbookDataAsync;
+  (window as any).replaceUniverWorkbook = replaceUniverWorkbook;
+}
+
 

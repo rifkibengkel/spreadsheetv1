@@ -1,0 +1,83 @@
+{
+  "totalFormulasAllSheets": 397942,
+  "sheetCounts": [
+    {
+      "path": "xl/worksheets/sheet4.xml",
+      "formulaCount": 0,
+      "fullColRefs": 0,
+      "sampleFormula": "none"
+    },
+    {
+      "path": "xl/worksheets/sheet2.xml",
+      "formulaCount": 2190,
+      "fullColRefs": 0,
+      "sampleFormula": "<f t=\"array\" ref=\"C4\">SUM(IF('Data All'!$B$2:$B$496610=B4,IF('Data All'!$Q$2:$Q$"
+    },
+    {
+      "path": "xl/worksheets/sheet3.xml",
+      "formulaCount": 1764,
+      "fullColRefs": 0,
+      "sampleFormula": "<f>COUNTIF('Data Valid'!$O$2:$O$414777,B4)</f>"
+    },
+    {
+      "path": "xl/worksheets/sheet1.xml",
+      "formulaCount": 2439,
+      "fullColRefs": 0,
+      "sampleFormula": "<f>COUNTIF('Unik Konsumen'!$D$2:$D$89768,B4)</f>"
+    },
+    {
+      "path": "xl/worksheets/sheet11.xml",
+      "formulaCount": 76,
+      "fullColRefs": 0,
+      "sampleFormula": "<f>IF(AND(U1=\"SUCCESS\",X1=\"TRUE\"),VLOOKUP(R1,$V$2:$W$21,2,0),IF(AND(U1=\"SUCCESS\""
+    },
+    {
+      "path": "xl/worksheets/sheet12.xml",
+      "formulaCount": 28,
+      "fullColRefs": 0,
+      "sampleFormula": "<f t=\"shared\" ref=\"E2:E65\" si=\"0\">DATE(YEAR(D2),MONTH(D2),DAY(D2))</f>"
+    },
+    {
+      "path": "xl/worksheets/sheet13.xml",
+      "formulaCount": 0,
+      "fullColRefs": 0,
+      "sampleFormula": "none"
+    },
+    {
+      "path": "xl/worksheets/sheet10.xml",
+      "formulaCount": 0,
+      "fullColRefs": 0,
+      "sampleFormula": "none"
+    },
+    {
+      "path": "xl/worksheets/sheet8.xml",
+      "formulaCount": 390901,
+      "fullColRefs": 0,
+      "sampleFormula": "<f>RANK(AB2,$AB$2:$AB$99682,0)+COUNTIF($AB$2:AB2,AB2)-1</f>"
+    },
+    {
+      "path": "xl/worksheets/sheet5.xml",
+      "formulaCount": 0,
+      "fullColRefs": 0,
+      "sampleFormula": "none"
+    },
+    {
+      "path": "xl/worksheets/sheet6.xml",
+      "formulaCount": 141,
+      "fullColRefs": 0,
+      "sampleFormula": "<f>Summary!I4</f>"
+    },
+    {
+      "path": "xl/worksheets/sheet7.xml",
+      "formulaCount": 402,
+      "fullColRefs": 250,
+      "sampleFormula": "<f>VLOOKUP(B4,'Unik Konsumen'!A:B,2,0)</f>"
+    },
+    {
+      "path": "xl/worksheets/sheet9.xml",
+      "formulaCount": 1,
+      "fullColRefs": 0,
+      "sampleFormula": "<f>DATE(YEAR(A2),MONTH(A2),DAY(A2))</f>"
+    }
+  ]
+}

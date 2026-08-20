@@ -1,0 +1,16 @@
+{
+  "Summary_A1_value": 123,
+  "EntriesData_A2_value": "2026-02-11 11:14:30",
+  "SummaryHadiah_A1_imported": {
+    "val": null,
+    "formula": "=Summary!A1"
+  },
+  "SummaryHadiah_B1_manual_cross_entries": {
+    "val": null,
+    "formula": "='Entries data'!A2"
+  },
+  "SummaryHadiah_C1_manual_cross_summary": {
+    "val": null,
+    "formula": "=Summary!A1"
+  }
+}

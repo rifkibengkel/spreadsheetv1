@@ -1,0 +1,100 @@
+[
+  {
+    "label": "Summary!A1",
+    "sheet": "Summary",
+    "value": 123,
+    "formula": "",
+    "snapshotCell": {
+      "v": 123,
+      "t": 2
+    }
+  },
+  {
+    "label": "Summary!C4",
+    "sheet": "Summary",
+    "value": 0,
+    "formula": "=SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+    "snapshotCell": {
+      "f": "=SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+      "v": 0,
+      "t": 2
+    }
+  },
+  {
+    "label": "Summary!O4",
+    "sheet": "Summary",
+    "value": 11218,
+    "formula": "=SUM(IF('Entries data'!$M$2:$M$155810=\"invalid\",IF('Entries data'!$Q$2:$Q$155810=Summary!N4,1,0)))",
+    "snapshotCell": {
+      "f": "=SUM(IF('Entries data'!$M$2:$M$155810=\"invalid\",IF('Entries data'!$Q$2:$Q$155810=Summary!N4,1,0)))",
+      "v": 11218,
+      "t": 2
+    }
+  },
+  {
+    "label": "Summary!P4",
+    "sheet": "Summary",
+    "value": 0.532314700579,
+    "formula": "=O4/$O$10",
+    "snapshotCell": {
+      "f": "=O4/$O$10",
+      "v": 0.532314700578912,
+      "t": 2
+    }
+  },
+  {
+    "label": "Summary Hadiah!A1",
+    "sheet": "Summary Hadiah",
+    "value": 123,
+    "formula": "=Summary!A1",
+    "snapshotCell": {
+      "f": "=Summary!A1",
+      "v": 123,
+      "t": 2
+    }
+  },
+  {
+    "label": "Summary Hadiah!C4",
+    "sheet": "Summary Hadiah",
+    "value": 0,
+    "formula": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+    "snapshotCell": {
+      "f": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+      "v": 0,
+      "t": 2
+    }
+  },
+  {
+    "label": "Kode Unik KOL!D3",
+    "sheet": "Kode Unik KOL",
+    "value": "2026-04-22 16:23:52",
+    "formula": "=INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C3,'Entries data'!$I$2:$I$26360,0))",
+    "snapshotCell": {
+      "f": "=INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C3,'Entries data'!$I$2:$I$26360,0))",
+      "v": "2026-04-22 16:23:52",
+      "t": 1
+    }
+  },
+  {
+    "label": "Kode Unik KOL!G3",
+    "sheet": "Kode Unik KOL",
+    "value": "Saldo Digital @Rp 2.000,-",
+    "formula": "=VLOOKUP(C3,'Entries data'!I2:T26360,12,0)",
+    "snapshotCell": {
+      "f": "=VLOOKUP(C3,'Entries data'!I2:T26360,12,0)",
+      "v": "Saldo Digital @Rp 2.000,-",
+      "t": 1
+    }
+  },
+  {
+    "label": "Kode Unik KOL!H3",
+    "sheet": "Kode Unik KOL",
+    "value": "FAILED",
+    "formula": "=VLOOKUP(C3,'Entries data'!I2:W26360,15,0)",
+    "snapshotCell": {
+      "f": "=VLOOKUP(C3,'Entries data'!I2:W26360,15,0)",
+      "v": "FAILED",
+      "t": 1
+    }
+  }
+]

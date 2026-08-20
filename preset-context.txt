@@ -1,0 +1,51 @@
+
+export * from "@univerjs/design";
+function or(m = {}) {
+  var n;
+  const {
+    container: l = "app",
+    workerURL: t,
+    header: p,
+    footer: u,
+    toolbar: a,
+    ribbonType: c,
+    formulaBar: f,
+    menu: g,
+    contextMenu: S,
+    disableAutoFocus: d,
+    customFontFamily: x,
+    docs: i,
+    sheets: r,
+    formula: o,
+    disableTextFormatAlert: U,
+    disableTextFormatMark: F
+  } = m, e = !!t;
+  return {
+    plugins: [
+      y,
+      [v, {
+        hasScroll: i == null ? void 0 : i.hasScroll
+      }],
+      R,
+      [H, {
+        container: l,
+        header: p,
+        toolbar: a,
+        ribbonType: c,
+        menu: g,
+        contextMenu: S,
+        disableAutoFocus: d,
+        customFontFamily: x
+      }],
+      C,
+      e ? [k, { workerURL: t }] : null,
+      [b, {
+        notExecuteFormula: e,
+        function: o == null ? void 0 : o.function
+      }],
+      [w, {
+        notExecuteFormula: e,
+        onlyRegisterFormulaRelatedMutations: !1,
+        isRowStylePrecedeColumnStyle: r == null ? void 0 : r.isRowStylePrecedeColumnStyle,
+        autoHeightForMergedCells: r == null ? void 0 : r.autoHeightForMergedCells,
+        freezeSync: r == null ? void 0 : r.freezeSync

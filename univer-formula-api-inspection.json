@@ -1,0 +1,10 @@
+{
+  "facadeMethods": [
+    "onBeforeCommandExecute",
+    "onCommandExecuted",
+    "executeCommand",
+    "syncExecuteCommand",
+    "getFormula"
+  ],
+  "injectorServices": []
+}

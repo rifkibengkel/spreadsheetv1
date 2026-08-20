@@ -1,0 +1,66 @@
+{
+  "totalDurationMs": 77756,
+  "importMetrics": {
+    "sheetCount": 13,
+    "sheetNames": [
+      "Summary Registrasi",
+      "Summary",
+      "Summary Valid",
+      "Registrasi 2025",
+      "Entries 2025",
+      "Komparasi",
+      "Top Point",
+      "Unik Konsumen",
+      "Data All",
+      "Data Valid",
+      "E-Voucher & E-Wallet",
+      "Direct Prize",
+      "Hadiah Fisik"
+    ],
+    "formulaCount": 617060,
+    "cachedValCount": 9644030,
+    "totalCellCount": 9647624,
+    "sampleFormulas": [
+      {
+        "sheetName": "Summary Registrasi",
+        "row": "3",
+        "col": "2",
+        "f": "=COUNTIF('Unik Konsumen'!$D$2:$D$89768,B4)",
+        "v": 433
+      },
+      {
+        "sheetName": "Summary Registrasi",
+        "row": "3",
+        "col": "3",
+        "f": "=SUM(IF('Unik Konsumen'!$D$2:$D$89768=B4,IF('Unik Konsumen'!$Q$2:$Q$89768=\"aktif\",1,0)))",
+        "v": 374
+      },
+      {
+        "sheetName": "Summary Registrasi",
+        "row": "3",
+        "col": "4",
+        "f": "=SUM(IF('Unik Konsumen'!$D$2:$D$89768=B4,IF('Unik Konsumen'!$Q$2:$Q$89768=\"blm aktif\",1,0)))",
+        "v": 59
+      },
+      {
+        "sheetName": "Summary Registrasi",
+        "row": "3",
+        "col": "7",
+        "f": "=SUMIF($A$4:$A$401,F4,$C$4:$C$401)",
+        "v": 4869
+      },
+      {
+        "sheetName": "Summary Registrasi",
+        "row": "3",
+        "col": "8",
+        "f": "=SUMIF($A$4:$A$401,F4,$D$4:$D$401)",
+        "v": 4167
+      }
+    ],
+    "memoryInfo": {
+      "totalJSHeapSize": "1303.12 MB",
+      "usedJSHeapSize": "1192.42 MB",
+      "jsHeapSizeLimit": "4192.00 MB"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "totalFormulas": 144289,
+  "simpleFormulasCount": 144045,
+  "expensiveFormulasCount": 244,
+  "classifiedExpensive": [
+    {
+      "cell": "Kode Unik KOL!G3",
+      "formula": "=VLOOKUP(C3,'Entries data'!I2:T26360,12,0)",
+      "initialResult": "Saldo Digital @Rp 2.000,-"
+    },
+    {
+      "cell": "Kode Unik KOL!H3",
+      "formula": "=VLOOKUP(C3,'Entries data'!I2:W26360,15,0)",
+      "initialResult": "FAILED"
+    },
+    {
+      "cell": "Kode Unik KOL!F4",
+      "formula": "=VLOOKUP(C4,'Entries data'!I3:Q26361,9,0)"
+    },
+    {
+      "cell": "Kode Unik KOL!G4",
+      "formula": "=VLOOKUP(C4,'Entries data'!I3:T26361,12,0)",
+      "initialResult": "ShopeePay @Rp 2.000,-"
+    },
+    {
+      "cell": "Kode Unik KOL!H4",
+      "formula": "=VLOOKUP(C4,'Entries data'!I3:W26361,15,0)",
+      "initialResult": "SUCCESS"
+    }
+  ],
+  "browserEval": {
+    "initialValues": [
+      {
+        "name": "Simple Same-sheet (Summary!I9)",
+        "formula": "=SUMIF($A$4:$A$188,$G9,C$4:C$188)",
+        "value": 1361
+      },
+      {
+        "name": "Simple Cross-sheet (Summary Hadiah!A1)",
+        "formula": "",
+        "value": null
+      },
+      {
+        "name": "Large Cross-sheet (Summary Hadiah!C4)",
+        "formula": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "value": 0
+      },
+      {
+        "name": "Shared Follower (Summary Hadiah!C5)",
+        "formula": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B5,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "value": 0
+      }
+    ],
+    "settledValues": [
+      {
+        "name": "Simple Same-sheet (Summary!I9)",
+        "formula": "=SUMIF($A$4:$A$188,$G9,C$4:C$188)",
+        "value": 1361
+      },
+      {
+        "name": "Simple Cross-sheet (Summary Hadiah!A1)",
+        "formula": "",
+        "value": null
+      },
+      {
+        "name": "Large Cross-sheet (Summary Hadiah!C4)",
+        "formula": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "value": 0
+      },
+      {
+        "name": "Shared Follower (Summary Hadiah!C5)",
+        "formula": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B5,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "value": 0
+      }
+    ]
+  }
+}

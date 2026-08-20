@@ -1,0 +1,38 @@
+{
+  "CaseA": {
+    "displayedVal": 300,
+    "cellModel": {
+      "f": "=A1+A2",
+      "v": 300,
+      "t": 2
+    }
+  },
+  "CaseB": {
+    "beforeCalc": {
+      "displayedVal": null,
+      "cellModel": {
+        "f": "=A1+A2"
+      }
+    },
+    "afterCalc": {
+      "displayedVal": 300,
+      "cellModel": {
+        "f": "=A1+A2",
+        "v": 300,
+        "t": 2
+      }
+    }
+  },
+  "CaseC": {
+    "initial": 100,
+    "afterDependencyEdit": 500
+  },
+  "CaseD": {
+    "initial": 300,
+    "afterDependencyEdit": 700
+  },
+  "CaseE": {
+    "initialFormula": 700,
+    "afterDependencyEdit": 1200
+  }
+}

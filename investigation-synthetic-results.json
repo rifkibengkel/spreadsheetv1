@@ -1,0 +1,72 @@
+{
+  "s1_A3_init_v": null,
+  "s2_A1_init_v": null,
+  "userEditCommands": [
+    {
+      "id": "sheet.mutation.set-range-values"
+    },
+    {
+      "id": "sheet.command.set-range-values"
+    },
+    {
+      "id": "formula.mutation.set-formula-data"
+    },
+    {
+      "id": "formula.mutation.set-trigger-formula-calculation-start"
+    },
+    {
+      "id": "doc.mutation.rich-text-editing"
+    },
+    {
+      "id": "doc.command-replace-snapshot"
+    },
+    {
+      "id": "sheet.operation.set-activate-cell-edit"
+    },
+    {
+      "id": "doc.operation.set-selections"
+    },
+    {
+      "id": "formula.mutation.set-trigger-formula-calculation-start"
+    },
+    {
+      "id": "formula.mutation.set-formula-calculation-start"
+    }
+  ],
+  "targetedTriggerSuccess": true,
+  "targetedTriggerError": null,
+  "s1_A3_after_v": 300,
+  "s2_A1_after_v": 300,
+  "allCapturedCommandsSample": [
+    {
+      "id": "sheet.mutation.set-range-values"
+    },
+    {
+      "id": "sheet.command.set-range-values"
+    },
+    {
+      "id": "formula.mutation.set-formula-data"
+    },
+    {
+      "id": "formula.mutation.set-trigger-formula-calculation-start"
+    },
+    {
+      "id": "doc.mutation.rich-text-editing"
+    },
+    {
+      "id": "doc.command-replace-snapshot"
+    },
+    {
+      "id": "sheet.operation.set-activate-cell-edit"
+    },
+    {
+      "id": "doc.operation.set-selections"
+    },
+    {
+      "id": "formula.mutation.set-trigger-formula-calculation-start"
+    },
+    {
+      "id": "formula.mutation.set-formula-calculation-start"
+    }
+  ]
+}

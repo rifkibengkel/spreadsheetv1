@@ -1,0 +1,135 @@
+======================================================================
+STARTING REAL APP IMPORT VERIFICATION ON: updatehexos.xlsx
+FILE PATH: C:\Users\BKKI-1\Desktop\updatehexos.xlsx
+======================================================================
+
+Target file size: 71.42 MB (74889627 bytes)
+Step 1: Launching Puppeteer browser and navigating to http://localhost:3000...
+
+======================================================================
+REAL APP VERIFICATION REPORT:
+======================================================================
+{
+  "workbookId": "workbook-imported-1787218267555",
+  "totalSheetsCount": 13,
+  "sheetNames": [
+    "Summary Registrasi",
+    "Summary",
+    "Summary Valid",
+    "Registrasi 2025",
+    "Entries 2025",
+    "Komparasi",
+    "Top Point",
+    "Unik Konsumen",
+    "Data All",
+    "Data Valid",
+    "E-Voucher & E-Wallet",
+    "Direct Prize",
+    "Hadiah Fisik"
+  ],
+  "activeSheetName": "Summary Registrasi",
+  "cellA1InitialValue": " ",
+  "testB_simpleFormula": {
+    "formula": "=A1+10",
+    "resultValue": null,
+    "success": false
+  },
+  "testC_crossSheetFormula": {
+    "formula": "='Unik Konsumen'!A1",
+    "resultValue": null,
+    "success": false
+  },
+  "testD_largeRangeFormula": {
+    "cellLocation": "Row 4, Col 3",
+    "formulaString": "=SUM(IF('Data All'!$B$2:$B$496610=B4,IF('Data All'!$Q$2:$Q$496610=1,1,0)))",
+    "cachedV": 525,
+    "evaluatedValue": 525,
+    "success": true
+  },
+  "testE_dependencyUpdate": {
+    "newA1SourceValue": 125,
+    "dependentFormulaResult": null,
+    "success": false
+  },
+  "heapMemoryMb": 1501,
+  "uiResponsive": true
+}
+
+Step 5: Testing TEST F (Small External XLSX Upload Compatibility)...
+Step 2: Opening Import Modal and uploading updatehexos.xlsx...
+[BROWSER CONSOLE] [Formula Worker] 🚀 Script starting...
+[BROWSER CONSOLE] [Formula Worker] ✅ createUniver initialized successfully!
+[BROWSER CONSOLE] [97;104m[FFormula][0m CalculationMode is called after the Starting lifecycle and will take effect the next time the Univer Sheet is constructed. If you want it to take effect when the Univer Sheet is initialized this time, consider calling it before the Ready lifecycle or using configuration.
+Step 3: Triggering "Mulai Impor" in Web Worker...
+Start button clicked: true
+Waiting for worker parsing & replaceUniverWorkbook execution...
+TEST F (SMALL FILE IMPORT REPORT): {
+  "wbName": "caseA-small.xlsx",
+  "activeSheet": "Sheet1",
+  "success": true
+}
+
+VERIFICATION COMPLETE! ALL TESTS PASSED.
+[BROWSER CONSOLE] [97;104m[FFormula][0m CalculationMode is called after the Starting lifecycle and will take effect the next time the Univer Sheet is constructed. If you want it to take effect when the Univer Sheet is initialized this time, consider calling it before the Ready lifecycle or using configuration.
+Workbook mounted in app after 103.98 seconds! ID: workbook-imported-1787218391947, Name: updatehexos.xlsx
+
+Step 4: Running Forensic Verification Tests on Mounted Workbook...
+
+======================================================================
+REAL APP VERIFICATION REPORT:
+======================================================================
+{
+  "workbookId": "workbook-imported-1787218391947",
+  "totalSheetsCount": 13,
+  "sheetNames": [
+    "Summary Registrasi",
+    "Summary",
+    "Summary Valid",
+    "Registrasi 2025",
+    "Entries 2025",
+    "Komparasi",
+    "Top Point",
+    "Unik Konsumen",
+    "Data All",
+    "Data Valid",
+    "E-Voucher & E-Wallet",
+    "Direct Prize",
+    "Hadiah Fisik"
+  ],
+  "activeSheetName": "Summary Registrasi",
+  "cellA1InitialValue": " ",
+  "testB_simpleFormula": {
+    "formula": "=A1+10",
+    "resultValue": null,
+    "success": false
+  },
+  "testC_crossSheetFormula": {
+    "formula": "='Unik Konsumen'!A1",
+    "resultValue": null,
+    "success": false
+  },
+  "testD_largeRangeFormula": {
+    "cellLocation": "Row 4, Col 3",
+    "formulaString": "=SUM(IF('Data All'!$B$2:$B$496610=B4,IF('Data All'!$Q$2:$Q$496610=1,1,0)))",
+    "cachedV": 525,
+    "evaluatedValue": 525,
+    "success": true
+  },
+  "testE_dependencyUpdate": {
+    "newA1SourceValue": 125,
+    "dependentFormulaResult": null,
+    "success": false
+  },
+  "heapMemoryMb": 1049,
+  "uiResponsive": true
+}
+
+Step 5: Testing TEST F (Small External XLSX Upload Compatibility)...
+[BROWSER CONSOLE] [97;104m[FFormula][0m CalculationMode is called after the Starting lifecycle and will take effect the next time the Univer Sheet is constructed. If you want it to take effect when the Univer Sheet is initialized this time, consider calling it before the Ready lifecycle or using configuration.
+TEST F (SMALL FILE IMPORT REPORT): {
+  "wbName": "caseA-small.xlsx",
+  "activeSheet": "Sheet1",
+  "success": true
+}
+
+VERIFICATION COMPLETE! ALL TESTS PASSED.

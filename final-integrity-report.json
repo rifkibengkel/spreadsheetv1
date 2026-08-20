@@ -1,0 +1,66 @@
+{
+  "CALCULATION_INTEGRITY": {
+    "Summary_I5": {
+      "originalExcelCachedResult": 5,
+      "importedUniverFormula": "=SUMIF($A$4:$A$188,$G5,C$4:C$188)",
+      "importedUniverCalculatedResult": 5,
+      "actualUIDisplayedValue": "5",
+      "agrees": true
+    },
+    "Summary_I6": {
+      "originalExcelCachedResult": 105,
+      "importedUniverFormula": "=SUMIF($A$4:$A$188,$G6,C$4:C$188)",
+      "importedUniverCalculatedResult": 105,
+      "actualUIDisplayedValue": "105",
+      "agrees": true
+    },
+    "Summary_I7": {
+      "originalExcelCachedResult": 322,
+      "importedUniverFormula": "=SUMIF($A$4:$A$188,$G7,C$4:C$188)",
+      "importedUniverCalculatedResult": 322,
+      "actualUIDisplayedValue": "322",
+      "agrees": true
+    }
+  },
+  "CROSS_SHEET_VALIDATION": {
+    "SummaryHadiah_C4": {
+      "exactImportedFormula": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+      "actualExcelCachedResult": 0,
+      "univerCalculatedResult": 0,
+      "actualUIDisplayedResult": "0",
+      "isMathematicallyZeroVerified": true,
+      "agrees": true
+    }
+  },
+  "DEPENDENCY_RECALCULATION": {
+    "SameSheetDependency": {
+      "targetCell": "Summary!I5",
+      "modifiedDependencyCell": "Summary!C5",
+      "originalI5Val": 5,
+      "modifiedC5Val": 10,
+      "updatedI5Val": 5,
+      "restoredI5Val": 5,
+      "PASSED": false
+    },
+    "CrossSheetDependency": {
+      "targetCell": "Summary Hadiah!Z10",
+      "crossSheetFormula": "='Summary'!I5",
+      "initialCrossVal": null,
+      "updatedCrossVal": null,
+      "restoredCrossVal": null,
+      "PASSED": false
+    }
+  },
+  "PERFORMANCE_RESPONSIVENESS": {
+    "switchedSheets": [
+      "Summary",
+      "Summary Hadiah",
+      "Tren Hadiah",
+      "Entries data",
+      "Kode Unik KOL"
+    ],
+    "switchDurationMs": 2641,
+    "pageUnresponsiveTriggered": false,
+    "PASSED": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "A1_imported": {
+    "value": null,
+    "formula": "=Summary!A1"
+  },
+  "B1_manual_cross": {
+    "value": null,
+    "formula": "='Entries data'!A2"
+  },
+  "C1_manual_summary": {
+    "value": null,
+    "formula": "=Summary!A1"
+  },
+  "C4_imported_sumif": {
+    "value": 0,
+    "formula": "=SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))"
+  }
+}

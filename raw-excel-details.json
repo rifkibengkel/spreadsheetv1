@@ -1,0 +1,60 @@
+[
+  {
+    "sheet": "Summary",
+    "cell": "A1",
+    "type": 2,
+    "value": 123
+  },
+  {
+    "sheet": "Summary Hadiah",
+    "cell": "A1",
+    "type": 6,
+    "value": {
+      "formula": "Summary!A1"
+    }
+  },
+  {
+    "sheet": "Summary",
+    "cell": "B4",
+    "type": 3,
+    "value": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "sheet": "Summary Hadiah",
+    "cell": "B4",
+    "type": 3,
+    "value": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "sheet": "Entries data",
+    "cell": "B2",
+    "type": 6,
+    "value": {
+      "formula": "DATE(YEAR(A2),MONTH(A2),DAY(A2))"
+    }
+  },
+  {
+    "sheet": "Entries data",
+    "cell": "M2",
+    "type": 3,
+    "value": "Invalid"
+  },
+  {
+    "sheet": "Summary",
+    "cell": "C4",
+    "type": 6,
+    "value": {
+      "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))"
+    },
+    "result": 0
+  },
+  {
+    "sheet": "Summary Hadiah",
+    "cell": "C4",
+    "type": 6,
+    "value": {
+      "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))"
+    },
+    "result": 0
+  }
+]

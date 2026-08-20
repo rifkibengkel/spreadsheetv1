@@ -1,0 +1,31 @@
+{
+  "activeWorkbookId": "workbook-imported-1787067056087",
+  "sheets": [
+    "Sheet1",
+    "Sheet2"
+  ],
+  "Sheet2_A1": {
+    "value": 100,
+    "cellData": {
+      "f": "=Sheet1!A1",
+      "v": 100,
+      "t": 2
+    }
+  },
+  "Sheet2_A2": {
+    "value": 200,
+    "cellData": {
+      "f": "=Sheet1!A2",
+      "v": 200,
+      "t": 2
+    }
+  },
+  "Sheet2_A3": {
+    "value": 300,
+    "cellData": {
+      "f": "=A1+A2",
+      "v": 300,
+      "t": 2
+    }
+  }
+}

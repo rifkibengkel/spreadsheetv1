@@ -1,0 +1,16 @@
+{
+  "manual": {
+    "val": 123,
+    "cell": {
+      "f": "=Summary!A1",
+      "v": 123,
+      "t": 2
+    }
+  },
+  "barakat": {
+    "val": null,
+    "cell": {
+      "f": "=Summary!A1"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "importDurationMs": 83549,
+  "updatehexosMetrics": {
+    "sheetCount": 13,
+    "formulaCount": 617060,
+    "cachedValCount": 9644030,
+    "sampleCells": [
+      {
+        "sheet": "Summary Registrasi",
+        "r": "3",
+        "c": "2",
+        "f": "=COUNTIF('Unik Konsumen'!$D$2:$D$89768,B4)",
+        "v": 433
+      },
+      {
+        "sheet": "Summary Registrasi",
+        "r": "3",
+        "c": "3",
+        "f": "=SUM(IF('Unik Konsumen'!$D$2:$D$89768=B4,IF('Unik Konsumen'!$Q$2:$Q$89768=\"aktif\",1,0)))",
+        "v": 374
+      },
+      {
+        "sheet": "Summary Registrasi",
+        "r": "3",
+        "c": "4",
+        "f": "=SUM(IF('Unik Konsumen'!$D$2:$D$89768=B4,IF('Unik Konsumen'!$Q$2:$Q$89768=\"blm aktif\",1,0)))",
+        "v": 59
+      },
+      {
+        "sheet": "Summary Registrasi",
+        "r": "3",
+        "c": "7",
+        "f": "=SUMIF($A$4:$A$401,F4,$C$4:$C$401)",
+        "v": 4869
+      },
+      {
+        "sheet": "Summary Registrasi",
+        "r": "3",
+        "c": "8",
+        "f": "=SUMIF($A$4:$A$401,F4,$D$4:$D$401)",
+        "v": 4167
+      }
+    ]
+  },
+  "reactiveTest": {
+    "sameSheetFormulaResult": null
+  },
+  "executeCalculationLogs": []
+}

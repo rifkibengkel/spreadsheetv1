@@ -1,0 +1,22 @@
+--- Summary Sheet Row 1 Cells ---
+Summary Row 1 Col 1 (A1): type=2, val=123, result=undefined, formula=undefined
+Summary Row 1 Col 2 (B1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 3 (C1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 4 (D1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 5 (E1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 6 (F1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 7 (G1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 8 (H1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 9 (I1): type=0, val=null, result=undefined, formula=undefined
+Summary Row 1 Col 10 (J1): type=0, val=null, result=undefined, formula=undefined
+--- Summary Hadiah Sheet Row 1 Cells ---
+Summary Hadiah Row 1 Col 1 (A1): type=6, val={"formula":"Summary!A1"}, result=undefined, formula=Summary!A1
+Summary Hadiah Row 1 Col 2 (B1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 3 (C1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 4 (D1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 5 (E1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 6 (F1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 7 (G1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 8 (H1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 9 (I1): type=0, val=null, result=undefined, formula=undefined
+Summary Hadiah Row 1 Col 10 (J1): type=0, val=null, result=undefined, formula=undefined

@@ -1,0 +1,63 @@
+{
+  "Numeric Result as Number (t=2, v=300)": {
+    "inputCell": {
+      "f": "=A1+A2",
+      "v": 300,
+      "t": 2
+    },
+    "modelCell": {
+      "f": "=A1+A2",
+      "v": 300,
+      "t": 2
+    },
+    "displayedValue": 300
+  },
+  "Numeric Result as String (t=1, v=\"300\")": {
+    "inputCell": {
+      "f": "=A1+A2",
+      "v": "300",
+      "t": 1
+    },
+    "modelCell": {
+      "f": "=A1+A2",
+      "v": "300",
+      "t": 1
+    },
+    "displayedValue": "300"
+  },
+  "Formula with String Type (t=1, no v)": {
+    "inputCell": {
+      "f": "=A1+A2",
+      "t": 1
+    },
+    "modelCell": {
+      "f": "=A1+A2",
+      "t": 2,
+      "v": 300
+    },
+    "displayedValue": 300
+  },
+  "Formula with undefined t and v": {
+    "inputCell": {
+      "f": "=A1+A2"
+    },
+    "modelCell": {
+      "f": "=A1+A2",
+      "v": 300,
+      "t": 2
+    },
+    "displayedValue": 300
+  },
+  "Formula with t=2 and no v": {
+    "inputCell": {
+      "f": "=A1+A2",
+      "t": 2
+    },
+    "modelCell": {
+      "f": "=A1+A2",
+      "t": 2,
+      "v": 300
+    },
+    "displayedValue": 300
+  }
+}

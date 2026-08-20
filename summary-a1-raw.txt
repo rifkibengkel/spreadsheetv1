@@ -1,0 +1,17 @@
+--- ALL WORKBOOK SHEETS ---
+Sheet name: Summary
+Sheet name: Summary Hadiah
+Sheet name: Tren Hadiah
+Sheet name: Entries data
+Sheet name: Kode Unik KOL
+--- Summary Sheet Row 1 & Row 2 Cells ---
+Summary R1C1 (A1): type=2, val=123, result=undefined, formula=undefined
+Summary R2C2 (B2): type=3, val="Summary Entries Daily", result=undefined, formula=undefined
+Summary R2C8 (H2): type=3, val="Summary Entries Weekly", result=undefined, formula=undefined
+Summary R2C14 (N2): type=3, val="Invalid Reason", result=undefined, formula=undefined
+Summary R2C18 (R2): type=3, val="Summary By Kota", result=undefined, formula=undefined
+Summary R2C25 (Y2): type=3, val="Summary By Propinsi", result=undefined, formula=undefined
+Summary R2C31 (AE2): type=3, val="Summary Store", result=undefined, formula=undefined
+Summary R2C35 (AI2): type=3, val="Summary Prize", result=undefined, formula=undefined
+--- Summary Hadiah Sheet Row 1 & Row 2 Cells ---
+Summary Hadiah R1C1 (A1): type=6, val={"formula":"Summary!A1"}, result=undefined, formula=Summary!A1

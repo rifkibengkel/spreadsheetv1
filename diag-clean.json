@@ -1,0 +1,10 @@
+[
+  "﻿≡ƒöÑ [DIAGNOSTIC] Starting...\r",
+  "≡ƒöÑ BEFORE IMPORT - CalculateResultApplyController exists: false\r",
+  "≡ƒöÑ BEFORE IMPORT - FormulaDataModel exists: false\r",
+  "≡ƒöÑ BEFORE IMPORT - formula result: 20\r",
+  "≡ƒöÑ AFTER IMPORT - active workbook id: imported-wb-diag\r",
+  "≡ƒöÑ AFTER IMPORT - CalculateResultApplyController exists: false\r",
+  "≡ƒöÑ AFTER IMPORT - FormulaDataModel exists: false\r",
+  "≡ƒöÑ AFTER IMPORT - typed formula result: 200\r"
+]

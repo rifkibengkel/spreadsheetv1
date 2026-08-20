@@ -1,0 +1,2097 @@
+{
+  "file": "C:\\Users\\BKKI-1\\Desktop\\report barakat.xlsx",
+  "sizeBytes": 28704017,
+  "sheetsCount": 5,
+  "sheets": [
+    {
+      "index": 0,
+      "name": "Summary",
+      "rowCount": 426,
+      "cellCount": 4120,
+      "formulaCount": 2751,
+      "sampleFormulas": [
+        {
+          "sheetIndex": 0,
+          "sheetName": "Summary",
+          "cellAddress": "C4",
+          "rowNumber": 4,
+          "colNumber": 3,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+            "ref": "C4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "C4",
+            "shareType": "array",
+            "ref": "C4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 0,
+          "sheetName": "Summary",
+          "cellAddress": "D4",
+          "rowNumber": 4,
+          "colNumber": 4,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+            "ref": "D4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "D4",
+            "shareType": "array",
+            "ref": "D4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 0,
+          "sheetName": "Summary",
+          "cellAddress": "E4",
+          "rowNumber": 4,
+          "colNumber": 5,
+          "cellType": 6,
+          "rawFormula": "C4+D4",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "C4+D4"
+          },
+          "cellModel": {
+            "address": "E4",
+            "formula": "C4+D4",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "solid",
+                "fgColor": {
+                  "theme": 6,
+                  "tint": 0.599993896298105
+                },
+                "bgColor": {
+                  "indexed": 64
+                }
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 0,
+          "sheetName": "Summary",
+          "cellAddress": "F4",
+          "rowNumber": 4,
+          "colNumber": 6,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+            "ref": "F4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "F4",
+            "shareType": "array",
+            "ref": "F4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "solid",
+                "fgColor": {
+                  "theme": 4,
+                  "tint": 0.599993896298105
+                },
+                "bgColor": {
+                  "indexed": 64
+                }
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 0,
+          "sheetName": "Summary",
+          "cellAddress": "I4",
+          "rowNumber": 4,
+          "colNumber": 9,
+          "cellType": 6,
+          "rawFormula": "SUMIF($A$4:$A$188,$G4,C$4:C$188)",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUMIF($A$4:$A$188,$G4,C$4:C$188)",
+            "ref": "I4:I30",
+            "shareType": "shared"
+          },
+          "cellModel": {
+            "address": "I4",
+            "shareType": "shared",
+            "ref": "I4:I30",
+            "formula": "SUMIF($A$4:$A$188,$G4,C$4:C$188)",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Summary Hadiah",
+      "rowCount": 425,
+      "cellCount": 6063,
+      "formulaCount": 4725,
+      "sampleFormulas": [
+        {
+          "sheetIndex": 1,
+          "sheetName": "Summary Hadiah",
+          "cellAddress": "C4",
+          "rowNumber": 4,
+          "colNumber": 3,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+            "ref": "C4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "C4",
+            "shareType": "array",
+            "ref": "C4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "right": {
+                  "style": "medium"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 1,
+          "sheetName": "Summary Hadiah",
+          "cellAddress": "D4",
+          "rowNumber": 4,
+          "colNumber": 4,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",1,0))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",1,0))))",
+            "ref": "D4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "D4",
+            "shareType": "array",
+            "ref": "D4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",1,0))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "medium"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 1,
+          "sheetName": "Summary Hadiah",
+          "cellAddress": "E4",
+          "rowNumber": 4,
+          "colNumber": 5,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",1,0))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",1,0))))",
+            "ref": "E4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "E4",
+            "shareType": "array",
+            "ref": "E4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",1,0))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "medium"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 1,
+          "sheetName": "Summary Hadiah",
+          "cellAddress": "F4",
+          "rowNumber": 4,
+          "colNumber": 6,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0)))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0)))))",
+            "ref": "F4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "F4",
+            "shareType": "array",
+            "ref": "F4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0)))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 1,
+          "sheetName": "Summary Hadiah",
+          "cellAddress": "G4",
+          "rowNumber": 4,
+          "colNumber": 7,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Y$2:$Y$155810<>\"fisik\",IF('Entries data'!$X$2:$X$155810='Summary Hadiah'!G$3,1,0))))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Y$2:$Y$155810<>\"fisik\",IF('Entries data'!$X$2:$X$155810='Summary Hadiah'!G$3,1,0))))))",
+            "ref": "G4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "G4",
+            "shareType": "array",
+            "ref": "G4",
+            "formula": "SUM(IF('Entries data'!$B$2:$B$155810='Summary Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Y$2:$Y$155810<>\"fisik\",IF('Entries data'!$X$2:$X$155810='Summary Hadiah'!G$3,1,0))))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Tren Hadiah",
+      "rowCount": 427,
+      "cellCount": 48163,
+      "formulaCount": 45795,
+      "sampleFormulas": [
+        {
+          "sheetIndex": 2,
+          "sheetName": "Tren Hadiah",
+          "cellAddress": "G4",
+          "rowNumber": 4,
+          "colNumber": 7,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"W1\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0))))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"W1\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0))))))",
+            "ref": "G4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "G4",
+            "shareType": "array",
+            "ref": "G4",
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"W1\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0))))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 2,
+          "sheetName": "Tren Hadiah",
+          "cellAddress": "H4",
+          "rowNumber": 4,
+          "colNumber": 8,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!H$3,1,0))))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!H$3,1,0))))))",
+            "ref": "H4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "H4",
+            "shareType": "array",
+            "ref": "H4",
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!H$3,1,0))))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 2,
+          "sheetName": "Tren Hadiah",
+          "cellAddress": "I4",
+          "rowNumber": 4,
+          "colNumber": 9,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!I$3,1,0))))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!I$3,1,0))))))",
+            "ref": "I4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "I4",
+            "shareType": "array",
+            "ref": "I4",
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!I$3,1,0))))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 2,
+          "sheetName": "Tren Hadiah",
+          "cellAddress": "J4",
+          "rowNumber": 4,
+          "colNumber": 10,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!J$3,1,0))))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!J$3,1,0))))))",
+            "ref": "J4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "J4",
+            "shareType": "array",
+            "ref": "J4",
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810=\"\",IF('Entries data'!$Y$2:$Y$155810=\"w1\",IF('Entries data'!$X$2:$X$155810='Tren Hadiah'!J$3,1,0))))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 2,
+          "sheetName": "Tren Hadiah",
+          "cellAddress": "K4",
+          "rowNumber": 4,
+          "colNumber": 11,
+          "cellType": 6,
+          "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Y$2:$Y$155810=\"w2\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0))))))",
+          "cellResult": 0,
+          "cellValue": {
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Y$2:$Y$155810=\"w2\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0))))))",
+            "ref": "K4",
+            "shareType": "array"
+          },
+          "cellModel": {
+            "address": "K4",
+            "shareType": "array",
+            "ref": "K4",
+            "formula": "SUM(IF('Entries data'!$K$2:$K$155810='Tren Hadiah'!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",IF('Entries data'!$T$2:$T$155810<>\"\",IF('Entries data'!$Y$2:$Y$155810=\"w2\",IF('Entries data'!$Z$2:$Z$155810=\"fisik\",1,0))))))",
+            "type": 6,
+            "result": 0,
+            "style": {
+              "numFmt": "#,##0",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "Entries data",
+      "rowCount": 97436,
+      "cellCount": 2357026,
+      "formulaCount": 90677,
+      "sampleFormulas": [
+        {
+          "sheetIndex": 3,
+          "sheetName": "Entries data",
+          "cellAddress": "B2",
+          "rowNumber": 2,
+          "colNumber": 2,
+          "cellType": 6,
+          "rawFormula": "DATE(YEAR(A2),MONTH(A2),DAY(A2))",
+          "cellResult": "2026-02-11T00:00:00.000Z",
+          "cellValue": {
+            "formula": "DATE(YEAR(A2),MONTH(A2),DAY(A2))",
+            "result": "2026-02-11T00:00:00.000Z"
+          },
+          "cellModel": {
+            "address": "B2",
+            "formula": "DATE(YEAR(A2),MONTH(A2),DAY(A2))",
+            "type": 6,
+            "result": "2026-02-11T00:00:00.000Z",
+            "style": {
+              "numFmt": "[$-409]dd-mmm-yy;@",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {},
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 3,
+          "sheetName": "Entries data",
+          "cellAddress": "B3",
+          "rowNumber": 3,
+          "colNumber": 2,
+          "cellType": 6,
+          "rawFormula": "DATE(YEAR(A3),MONTH(A3),DAY(A3))",
+          "cellResult": "2026-02-12T00:00:00.000Z",
+          "cellValue": {
+            "formula": "DATE(YEAR(A3),MONTH(A3),DAY(A3))",
+            "result": "2026-02-12T00:00:00.000Z",
+            "ref": "B3:B66",
+            "shareType": "shared"
+          },
+          "cellModel": {
+            "address": "B3",
+            "shareType": "shared",
+            "ref": "B3:B66",
+            "formula": "DATE(YEAR(A3),MONTH(A3),DAY(A3))",
+            "type": 6,
+            "result": "2026-02-12T00:00:00.000Z",
+            "style": {
+              "numFmt": "[$-409]dd-mmm-yy;@",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {},
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 3,
+          "sheetName": "Entries data",
+          "cellAddress": "B4",
+          "rowNumber": 4,
+          "colNumber": 2,
+          "cellType": 6,
+          "rawFormula": "DATE(YEAR(A4),MONTH(A4),DAY(A4))",
+          "cellResult": "2026-02-12T00:00:00.000Z",
+          "cellValue": {
+            "result": "2026-02-12T00:00:00.000Z",
+            "sharedFormula": "B3"
+          },
+          "cellModel": {
+            "address": "B4",
+            "type": 6,
+            "result": "2026-02-12T00:00:00.000Z",
+            "style": {
+              "numFmt": "[$-409]dd-mmm-yy;@",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {},
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            },
+            "sharedFormula": "B3"
+          },
+          "sharedFormula": "B3"
+        },
+        {
+          "sheetIndex": 3,
+          "sheetName": "Entries data",
+          "cellAddress": "B5",
+          "rowNumber": 5,
+          "colNumber": 2,
+          "cellType": 6,
+          "rawFormula": "DATE(YEAR(A5),MONTH(A5),DAY(A5))",
+          "cellResult": "2026-02-12T00:00:00.000Z",
+          "cellValue": {
+            "result": "2026-02-12T00:00:00.000Z",
+            "sharedFormula": "B3"
+          },
+          "cellModel": {
+            "address": "B5",
+            "type": 6,
+            "result": "2026-02-12T00:00:00.000Z",
+            "style": {
+              "numFmt": "[$-409]dd-mmm-yy;@",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {},
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            },
+            "sharedFormula": "B3"
+          },
+          "sharedFormula": "B3"
+        },
+        {
+          "sheetIndex": 3,
+          "sheetName": "Entries data",
+          "cellAddress": "B6",
+          "rowNumber": 6,
+          "colNumber": 2,
+          "cellType": 6,
+          "rawFormula": "DATE(YEAR(A6),MONTH(A6),DAY(A6))",
+          "cellResult": "2026-02-14T00:00:00.000Z",
+          "cellValue": {
+            "result": "2026-02-14T00:00:00.000Z",
+            "sharedFormula": "B3"
+          },
+          "cellModel": {
+            "address": "B6",
+            "type": 6,
+            "result": "2026-02-14T00:00:00.000Z",
+            "style": {
+              "numFmt": "[$-409]dd-mmm-yy;@",
+              "font": {
+                "size": 10,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {},
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            },
+            "sharedFormula": "B3"
+          },
+          "sharedFormula": "B3"
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "Kode Unik KOL",
+      "rowCount": 167,
+      "cellCount": 1005,
+      "formulaCount": 340,
+      "sampleFormulas": [
+        {
+          "sheetIndex": 4,
+          "sheetName": "Kode Unik KOL",
+          "cellAddress": "D3",
+          "rowNumber": 3,
+          "colNumber": 4,
+          "cellType": 6,
+          "rawFormula": "INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C3,'Entries data'!$I$2:$I$26360,0))",
+          "cellResult": "2026-04-22 16:23:52",
+          "cellValue": {
+            "formula": "INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C3,'Entries data'!$I$2:$I$26360,0))",
+            "result": "2026-04-22 16:23:52"
+          },
+          "cellModel": {
+            "address": "D3",
+            "formula": "INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C3,'Entries data'!$I$2:$I$26360,0))",
+            "type": 6,
+            "result": "2026-04-22 16:23:52",
+            "style": {
+              "font": {
+                "size": 11,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 4,
+          "sheetName": "Kode Unik KOL",
+          "cellAddress": "G3",
+          "rowNumber": 3,
+          "colNumber": 7,
+          "cellType": 6,
+          "rawFormula": "VLOOKUP(C3,'Entries data'!I2:T26360,12,0)",
+          "cellResult": "Saldo Digital @Rp 2.000,-",
+          "cellValue": {
+            "formula": "VLOOKUP(C3,'Entries data'!I2:T26360,12,0)",
+            "result": "Saldo Digital @Rp 2.000,-"
+          },
+          "cellModel": {
+            "address": "G3",
+            "formula": "VLOOKUP(C3,'Entries data'!I2:T26360,12,0)",
+            "type": 6,
+            "result": "Saldo Digital @Rp 2.000,-",
+            "style": {
+              "font": {
+                "size": 11,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 4,
+          "sheetName": "Kode Unik KOL",
+          "cellAddress": "H3",
+          "rowNumber": 3,
+          "colNumber": 8,
+          "cellType": 6,
+          "rawFormula": "VLOOKUP(C3,'Entries data'!I2:W26360,15,0)",
+          "cellResult": "FAILED",
+          "cellValue": {
+            "formula": "VLOOKUP(C3,'Entries data'!I2:W26360,15,0)",
+            "result": "FAILED"
+          },
+          "cellModel": {
+            "address": "H3",
+            "formula": "VLOOKUP(C3,'Entries data'!I2:W26360,15,0)",
+            "type": 6,
+            "result": "FAILED",
+            "style": {
+              "font": {
+                "size": 11,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 4,
+          "sheetName": "Kode Unik KOL",
+          "cellAddress": "D4",
+          "rowNumber": 4,
+          "colNumber": 4,
+          "cellType": 6,
+          "rawFormula": "INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C4,'Entries data'!$I$2:$I$26360,0))",
+          "cellResult": "2026-04-21 14:50:31",
+          "cellValue": {
+            "formula": "INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C4,'Entries data'!$I$2:$I$26360,0))",
+            "result": "2026-04-21 14:50:31"
+          },
+          "cellModel": {
+            "address": "D4",
+            "formula": "INDEX('Entries data'!$A$2:$A$26360,MATCH('Kode Unik KOL'!C4,'Entries data'!$I$2:$I$26360,0))",
+            "type": 6,
+            "result": "2026-04-21 14:50:31",
+            "style": {
+              "font": {
+                "size": 11,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        },
+        {
+          "sheetIndex": 4,
+          "sheetName": "Kode Unik KOL",
+          "cellAddress": "F4",
+          "rowNumber": 4,
+          "colNumber": 6,
+          "cellType": 6,
+          "rawFormula": "VLOOKUP(C4,'Entries data'!I3:Q26361,9,0)",
+          "cellValue": {
+            "formula": "VLOOKUP(C4,'Entries data'!I3:Q26361,9,0)"
+          },
+          "cellModel": {
+            "address": "F4",
+            "formula": "VLOOKUP(C4,'Entries data'!I3:Q26361,9,0)",
+            "type": 6,
+            "style": {
+              "font": {
+                "size": 11,
+                "color": {
+                  "theme": 1
+                },
+                "name": "Calibri",
+                "charset": 134,
+                "scheme": "minor"
+              },
+              "border": {
+                "left": {
+                  "style": "thin"
+                },
+                "right": {
+                  "style": "thin"
+                },
+                "top": {
+                  "style": "thin"
+                },
+                "bottom": {
+                  "style": "thin"
+                }
+              },
+              "fill": {
+                "type": "pattern",
+                "pattern": "none"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "sampleFormulas": [
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "C4",
+      "rowNumber": 4,
+      "colNumber": 3,
+      "cellType": 6,
+      "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "ref": "C4",
+        "shareType": "array"
+      },
+      "cellModel": {
+        "address": "C4",
+        "shareType": "array",
+        "ref": "C4",
+        "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "D4",
+      "rowNumber": 4,
+      "colNumber": 4,
+      "cellType": 6,
+      "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+        "ref": "D4",
+        "shareType": "array"
+      },
+      "cellModel": {
+        "address": "D4",
+        "shareType": "array",
+        "ref": "D4",
+        "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "E4",
+      "rowNumber": 4,
+      "colNumber": 5,
+      "cellType": 6,
+      "rawFormula": "C4+D4",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "C4+D4"
+      },
+      "cellModel": {
+        "address": "E4",
+        "formula": "C4+D4",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "solid",
+            "fgColor": {
+              "theme": 6,
+              "tint": 0.599993896298105
+            },
+            "bgColor": {
+              "indexed": 64
+            }
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "F4",
+      "rowNumber": 4,
+      "colNumber": 6,
+      "cellType": 6,
+      "rawFormula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+        "ref": "F4",
+        "shareType": "array"
+      },
+      "cellModel": {
+        "address": "F4",
+        "shareType": "array",
+        "ref": "F4",
+        "formula": "SUM(IF('Entries data'!$B$2:$B$155810=Summary!$B4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "solid",
+            "fgColor": {
+              "theme": 4,
+              "tint": 0.599993896298105
+            },
+            "bgColor": {
+              "indexed": 64
+            }
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "I4",
+      "rowNumber": 4,
+      "colNumber": 9,
+      "cellType": 6,
+      "rawFormula": "SUMIF($A$4:$A$188,$G4,C$4:C$188)",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "SUMIF($A$4:$A$188,$G4,C$4:C$188)",
+        "ref": "I4:I30",
+        "shareType": "shared"
+      },
+      "cellModel": {
+        "address": "I4",
+        "shareType": "shared",
+        "ref": "I4:I30",
+        "formula": "SUMIF($A$4:$A$188,$G4,C$4:C$188)",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "J4",
+      "rowNumber": 4,
+      "colNumber": 10,
+      "cellType": 6,
+      "rawFormula": "SUMIF($A$4:$A$188,$G4,D$4:D$188)",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "SUMIF($A$4:$A$188,$G4,D$4:D$188)"
+      },
+      "cellModel": {
+        "address": "J4",
+        "formula": "SUMIF($A$4:$A$188,$G4,D$4:D$188)",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "K4",
+      "rowNumber": 4,
+      "colNumber": 11,
+      "cellType": 6,
+      "rawFormula": "SUMIF($A$4:$A$188,$G4,E$4:E$188)",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "SUMIF($A$4:$A$188,$G4,E$4:E$188)",
+        "ref": "K4:K30",
+        "shareType": "shared"
+      },
+      "cellModel": {
+        "address": "K4",
+        "shareType": "shared",
+        "ref": "K4:K30",
+        "formula": "SUMIF($A$4:$A$188,$G4,E$4:E$188)",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "solid",
+            "fgColor": {
+              "theme": 6,
+              "tint": 0.599993896298105
+            },
+            "bgColor": {
+              "indexed": 64
+            }
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "L4",
+      "rowNumber": 4,
+      "colNumber": 12,
+      "cellType": 6,
+      "rawFormula": "SUMIF($A$4:$A$188,$G4,F$4:F$188)",
+      "cellResult": 0,
+      "cellValue": {
+        "formula": "SUMIF($A$4:$A$188,$G4,F$4:F$188)",
+        "ref": "L4:L30",
+        "shareType": "shared"
+      },
+      "cellModel": {
+        "address": "L4",
+        "shareType": "shared",
+        "ref": "L4:L30",
+        "formula": "SUMIF($A$4:$A$188,$G4,F$4:F$188)",
+        "type": 6,
+        "result": 0,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "O4",
+      "rowNumber": 4,
+      "colNumber": 15,
+      "cellType": 6,
+      "rawFormula": "SUM(IF('Entries data'!$M$2:$M$155810=\"invalid\",IF('Entries data'!$Q$2:$Q$155810=Summary!N4,1,0)))",
+      "cellResult": 11218,
+      "cellValue": {
+        "formula": "SUM(IF('Entries data'!$M$2:$M$155810=\"invalid\",IF('Entries data'!$Q$2:$Q$155810=Summary!N4,1,0)))",
+        "result": 11218,
+        "ref": "O4",
+        "shareType": "array"
+      },
+      "cellModel": {
+        "address": "O4",
+        "shareType": "array",
+        "ref": "O4",
+        "formula": "SUM(IF('Entries data'!$M$2:$M$155810=\"invalid\",IF('Entries data'!$Q$2:$Q$155810=Summary!N4,1,0)))",
+        "type": 6,
+        "result": 11218,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "P4",
+      "rowNumber": 4,
+      "colNumber": 16,
+      "cellType": 6,
+      "rawFormula": "O4/$O$10",
+      "cellResult": 0.532314700578912,
+      "cellValue": {
+        "formula": "O4/$O$10",
+        "result": 0.532314700578912
+      },
+      "cellModel": {
+        "address": "P4",
+        "formula": "O4/$O$10",
+        "type": 6,
+        "result": 0.532314700578912,
+        "style": {
+          "numFmt": "0%",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "T4",
+      "rowNumber": 4,
+      "colNumber": 20,
+      "cellType": 6,
+      "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+      "cellResult": 4236,
+      "cellValue": {
+        "formula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "result": 4236,
+        "ref": "T4",
+        "shareType": "array"
+      },
+      "cellModel": {
+        "address": "T4",
+        "shareType": "array",
+        "ref": "T4",
+        "formula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$M$2:$M$155810=\"valid\",1,0)))",
+        "type": 6,
+        "result": 4236,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "U4",
+      "rowNumber": 4,
+      "colNumber": 21,
+      "cellType": 6,
+      "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+      "cellResult": 3752,
+      "cellValue": {
+        "formula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+        "result": 3752,
+        "ref": "U4",
+        "shareType": "array"
+      },
+      "cellModel": {
+        "address": "U4",
+        "shareType": "array",
+        "ref": "U4",
+        "formula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$M$2:$M$155810=\"invalid\",1,0)))",
+        "type": 6,
+        "result": 3752,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "V4",
+      "rowNumber": 4,
+      "colNumber": 22,
+      "cellType": 6,
+      "rawFormula": "T4+U4",
+      "cellResult": 7988,
+      "cellValue": {
+        "formula": "T4+U4",
+        "result": 7988
+      },
+      "cellModel": {
+        "address": "V4",
+        "formula": "T4+U4",
+        "type": 6,
+        "result": 7988,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "solid",
+            "fgColor": {
+              "theme": 6,
+              "tint": 0.599993896298105
+            },
+            "bgColor": {
+              "indexed": 64
+            }
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "W4",
+      "rowNumber": 4,
+      "colNumber": 23,
+      "cellType": 6,
+      "rawFormula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+      "cellResult": 4398,
+      "cellValue": {
+        "formula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+        "result": 4398,
+        "ref": "W4",
+        "shareType": "array"
+      },
+      "cellModel": {
+        "address": "W4",
+        "shareType": "array",
+        "ref": "W4",
+        "formula": "SUM(IF('Entries data'!$K$2:$K$155810=Summary!$R4,IF('Entries data'!$U$2:$U$155810=1,1,0)))",
+        "type": 6,
+        "result": 4398,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    },
+    {
+      "sheetIndex": 0,
+      "sheetName": "Summary",
+      "cellAddress": "Z4",
+      "rowNumber": 4,
+      "colNumber": 26,
+      "cellType": 6,
+      "rawFormula": "SUMIF($S$4:$S$427,$Y4,T$4:T$427)",
+      "cellResult": 4236,
+      "cellValue": {
+        "formula": "SUMIF($S$4:$S$427,$Y4,T$4:T$427)",
+        "result": 4236,
+        "ref": "Z4:Z40",
+        "shareType": "shared"
+      },
+      "cellModel": {
+        "address": "Z4",
+        "shareType": "shared",
+        "ref": "Z4:Z40",
+        "formula": "SUMIF($S$4:$S$427,$Y4,T$4:T$427)",
+        "type": 6,
+        "result": 4236,
+        "style": {
+          "numFmt": "#,##0",
+          "font": {
+            "size": 10,
+            "color": {
+              "theme": 1
+            },
+            "name": "Calibri",
+            "charset": 134,
+            "scheme": "minor"
+          },
+          "border": {
+            "left": {
+              "style": "thin"
+            },
+            "right": {
+              "style": "thin"
+            },
+            "top": {
+              "style": "thin"
+            },
+            "bottom": {
+              "style": "thin"
+            }
+          },
+          "fill": {
+            "type": "pattern",
+            "pattern": "none"
+          }
+        }
+      }
+    }
+  ]
+}

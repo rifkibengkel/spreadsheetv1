@@ -1,0 +1,30 @@
+{
+  "postMountState": {
+    "memAfterMountMb": 1053,
+    "uiLatencyMs": 1,
+    "uiResponsive": true
+  },
+  "postCalcState": {
+    "memAfterCalcMb": 1048,
+    "summaryC4Val": 525,
+    "unikA1Val": "rank",
+    "evoucherA1Val": "id"
+  },
+  "testsResult": {
+    "testB_simple": {
+      "formula": "=10+20",
+      "value": null,
+      "success": false
+    },
+    "testC_crossSheet": {
+      "formula": "='Unik Konsumen'!A1",
+      "value": null,
+      "success": false
+    },
+    "testE_dependency": {
+      "initial": null,
+      "updated": null,
+      "success": false
+    }
+  }
+}

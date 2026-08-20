@@ -1,0 +1,55 @@
+{
+  "smallCached": {
+    "label": "Case A (Small External File)",
+    "totalFormulas": 4,
+    "formulasWithCachedV": 4,
+    "formulasWithoutCachedV": 0,
+    "cachedVPercentage": "100.00%",
+    "sheetBreakdown": {
+      "Sheet1": {
+        "totalFormulas": 1,
+        "formulasWithCachedV": 1,
+        "formulasWithoutCachedV": 0
+      },
+      "Sheet2": {
+        "totalFormulas": 3,
+        "formulasWithCachedV": 3,
+        "formulasWithoutCachedV": 0
+      }
+    }
+  },
+  "largeCached": {
+    "label": "Case B (report barakat.xlsx)",
+    "totalFormulas": 144289,
+    "formulasWithCachedV": 53552,
+    "formulasWithoutCachedV": 90737,
+    "cachedVPercentage": "37.11%",
+    "sheetBreakdown": {
+      "Summary": {
+        "totalFormulas": 2751,
+        "formulasWithCachedV": 2751,
+        "formulasWithoutCachedV": 0
+      },
+      "Summary Hadiah": {
+        "totalFormulas": 4725,
+        "formulasWithCachedV": 4725,
+        "formulasWithoutCachedV": 0
+      },
+      "Tren Hadiah": {
+        "totalFormulas": 45795,
+        "formulasWithCachedV": 45795,
+        "formulasWithoutCachedV": 0
+      },
+      "Entries data": {
+        "totalFormulas": 90677,
+        "formulasWithCachedV": 0,
+        "formulasWithoutCachedV": 90677
+      },
+      "Kode Unik KOL": {
+        "totalFormulas": 341,
+        "formulasWithCachedV": 281,
+        "formulasWithoutCachedV": 60
+      }
+    }
+  }
+}

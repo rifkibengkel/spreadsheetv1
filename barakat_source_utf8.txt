@@ -1,0 +1,25 @@
+=== Source File: report barakat_07-03-07.xlsx ===
+Total Sheets: 0
+
+xl/worksheets/sheet1.xml:
+  Formulas: 2751
+  Cached Values: 4120
+
+xl/worksheets/sheet2.xml:
+  Formulas: 4729
+  Cached Values: 6063
+
+xl/worksheets/sheet3.xml:
+  Formulas: 45795
+  Cached Values: 48163
+
+xl/worksheets/sheet4.xml:
+  Formulas: 90677
+  Cached Values: 2135623
+
+xl/worksheets/sheet5.xml:
+  Formulas: 341
+  Cached Values: 946
+
+TOTAL FORMULAS: 144293
+TOTAL CACHED VALUES: 2194915

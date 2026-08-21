@@ -1,0 +1,62 @@
+[
+  {
+    "cell": "O4",
+    "fAttrs": " t=\"array\" ref=\"O4\"",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;invalid&quot;,IF(&apos;Entries data&apos;!$Q$2:$Q$155810=Summary!N4,1,0)))",
+    "value": "11218"
+  },
+  {
+    "cell": "T4",
+    "fAttrs": " t=\"array\" ref=\"T4\"",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$K$2:$K$155810=Summary!$R4,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;valid&quot;,1,0)))",
+    "value": "4236"
+  },
+  {
+    "cell": "U4",
+    "fAttrs": " t=\"array\" ref=\"U4\"",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$K$2:$K$155810=Summary!$R4,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;invalid&quot;,1,0)))",
+    "value": "3752"
+  },
+  {
+    "cell": "V4",
+    "fAttrs": "",
+    "formula": "T4+U4",
+    "value": "7988"
+  },
+  {
+    "cell": "W4",
+    "fAttrs": " t=\"array\" ref=\"W4\"",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$K$2:$K$155810=Summary!$R4,IF(&apos;Entries data&apos;!$U$2:$U$155810=1,1,0)))",
+    "value": "4398"
+  },
+  {
+    "cell": "Z4",
+    "fAttrs": "",
+    "formula": "SUMIF($S$4:$S$427,$Y4,T$4:T$427)",
+    "value": "4236"
+  },
+  {
+    "cell": "AF4",
+    "fAttrs": " t=\"array\" ref=\"AF4\"",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;valid&quot;,IF(&apos;Entries data&apos;!$O$2:$O$155810=Summary!AE4,1,0)))",
+    "value": "14407"
+  },
+  {
+    "cell": "AG4",
+    "fAttrs": "",
+    "formula": "AF4/$AF$11",
+    "value": "0.188672079622839"
+  },
+  {
+    "cell": "AK4",
+    "fAttrs": "",
+    "formula": "COUNTIF(&apos;Entries data&apos;!$X$2:$X$155810,Summary!AI4)",
+    "value": "2"
+  },
+  {
+    "cell": "AL4",
+    "fAttrs": " t=\"array\" ref=\"AL4\"",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$X$2:$X$155810=Summary!$AI4,IF(&apos;Entries data&apos;!$V$2:$V$155810&lt;&gt;&quot;Rejected&quot;,1,0)))",
+    "value": "2"
+  }
+]

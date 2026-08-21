@@ -69,8 +69,29 @@ self.onmessage = async (e: MessageEvent) => {
     let exportWb: ExcelJS.Workbook | null = new ExcelJS.Workbook();
     exportWb.creator = 'Univer Spreadsheets App';
     exportWb.lastModifiedBy = 'Univer Spreadsheets App';
+    exportWb.calcProperties.fullCalcOnLoad = true;
 
     const sortedSheetIds = snapshot.sheetOrder || Object.keys(snapshot.sheets);
+
+    // Collect all available worksheet names for precise sheet-name quoting in formulas
+    const availableSheetNames: string[] = sortedSheetIds
+      .map((id: string) => snapshot.sheets[id]?.name)
+      .filter((name: any): name is string => typeof name === 'string' && name.length > 0);
+
+    function sanitizeSheetNames(formula: string): string {
+      if (!formula) return formula;
+      let result = formula;
+      for (let i = 0; i < availableSheetNames.length; i++) {
+        const name = availableSheetNames[i];
+        if (/[\s&\-\.\/\\]/.test(name)) {
+          const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`(?<!')${escaped}(?!')!`, 'g');
+          result = result.replace(regex, `'${name}'!`);
+        }
+      }
+      return result;
+    }
+
     let totalRowsOverall = 0;
 
     sortedSheetIds.forEach((sheetId: string) => {
@@ -93,6 +114,24 @@ self.onmessage = async (e: MessageEvent) => {
       const cellDataRaw = sheetData.cellData || {};
       const rowKeys = Object.keys(cellDataRaw).map(Number).sort((a, b) => a - b);
 
+      // Track shared formulas per sheet (si -> master formula string)
+      const sharedFormulaMap = new Map<string, string>();
+
+      // First pass: register all master shared formulas
+      for (let rIdx = 0; rIdx < rowKeys.length; rIdx++) {
+        const rowIndex = rowKeys[rIdx];
+        const cols = cellDataRaw[rowIndex];
+        if (cols) {
+          const colKeys = Object.keys(cols).map(Number);
+          for (let cIdx = 0; cIdx < colKeys.length; cIdx++) {
+            const cellPay = cols[colKeys[cIdx]];
+            if (cellPay && cellPay.f && cellPay.si !== undefined && cellPay.si !== null) {
+              sharedFormulaMap.set(String(cellPay.si), cellPay.f);
+            }
+          }
+        }
+      }
+
       for (let rIdx = 0; rIdx < rowKeys.length; rIdx++) {
         const rowIndex = rowKeys[rIdx];
         const cols = cellDataRaw[rowIndex];
@@ -104,20 +143,60 @@ self.onmessage = async (e: MessageEvent) => {
             if (!cellPay) continue;
 
             const cell = ws.getCell(rowIndex + 1, colIndex + 1);
-            if (cellPay.f) {
-              let parsedFormula = cellPay.f;
+
+            let formulaText = cellPay.f;
+            if (!formulaText && cellPay.si !== undefined && cellPay.si !== null) {
+              formulaText = sharedFormulaMap.get(String(cellPay.si));
+            }
+
+            if (formulaText) {
+              let parsedFormula = formulaText;
               if (parsedFormula.startsWith('=')) {
                 parsedFormula = parsedFormula.substring(1);
               }
-              const formulaRes = cellPay.v !== undefined && cellPay.v !== null 
+              // Sanitize unquoted sheet names containing spaces, &, -, etc.
+              parsedFormula = sanitizeSheetNames(parsedFormula);
+
+              const isArrayFormula = cellPay.t === 1 || 
+                /SUM\s*\(\s*IF\b|COUNT\s*\(\s*IF\b|AVERAGE\s*\(\s*IF\b|MODE\.MULT\b|MAX\s*\(\s*IF\b|MIN\s*\(\s*IF\b/i.test(parsedFormula) ||
+                /:\$[A-Z]+\$\d+\s*=|\$[A-Z]+\$\d+:\$[A-Z]+\$\d+\s*=/i.test(parsedFormula) ||
+                (parsedFormula.startsWith('{') && parsedFormula.endsWith('}'));
+
+              if (parsedFormula.startsWith('{') && parsedFormula.endsWith('}')) {
+                parsedFormula = parsedFormula.substring(1, parsedFormula.length - 1);
+              }
+
+              let formulaRes = cellPay.v !== undefined && cellPay.v !== null 
                 ? cellPay.v 
                 : (cellPay.p?.body?.dataStream ? cellPay.p.body.dataStream.replace(/[\r\n]+$/, '') : undefined);
-              cell.value = {
+
+              if (typeof formulaRes === 'string' && formulaRes.trim() !== '' && !isNaN(Number(formulaRes))) {
+                formulaRes = Number(formulaRes);
+              }
+
+              const cellObj: any = {
                 formula: parsedFormula,
                 result: formulaRes,
               };
+
+              if (isArrayFormula) {
+                cellObj.shareType = 'array';
+                cellObj.ref = cell.address;
+              }
+
+              cell.value = cellObj;
             } else if (cellPay.v !== undefined && cellPay.v !== null) {
-              cell.value = cellPay.v;
+              if (typeof cellPay.v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(cellPay.v)) {
+                const dateObj = new Date(cellPay.v);
+                if (!isNaN(dateObj.getTime())) {
+                  cell.value = dateObj;
+                  cell.numFmt = 'yyyy-mm-dd';
+                } else {
+                  cell.value = cellPay.v;
+                }
+              } else {
+                cell.value = cellPay.v;
+              }
             } else if (cellPay.p && cellPay.p.body && typeof cellPay.p.body.dataStream === 'string') {
               const rawText = cellPay.p.body.dataStream.replace(/[\r\n]+$/, '');
               if (rawText.length > 0) {

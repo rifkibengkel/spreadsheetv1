@@ -1,0 +1,411 @@
+{
+  "mismatchBySheet": {
+    "Summary": 1341,
+    "Summary Hadiah": 2202,
+    "Tren Hadiah": 1020,
+    "Entries data": 5824190,
+    "Kode Unik KOL": 715
+  },
+  "total": 5829468,
+  "top50Mismatches": [
+    {
+      "sheet": "Summary",
+      "cell": "B4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "46054",
+      "expValue": "24"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "H4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "24",
+      "expValue": "25"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "N4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "25",
+      "expValue": "26"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "R4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "26",
+      "expValue": "27"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "S4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "27",
+      "expValue": "28"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "Y4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "27",
+      "expValue": "28"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AE4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "28",
+      "expValue": "29"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AI4",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "29",
+      "expValue": "30"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "B5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "46055",
+      "expValue": "31"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "G5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "30",
+      "expValue": "32"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "H5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "31",
+      "expValue": "33"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "N5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "32",
+      "expValue": "34"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "R5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "33",
+      "expValue": "35"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "S5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "34",
+      "expValue": "36"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "Y5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "35",
+      "expValue": "37"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AE5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "36",
+      "expValue": "38"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AI5",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "37",
+      "expValue": "39"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "B6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "46056",
+      "expValue": "40"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "G6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "38",
+      "expValue": "41"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "H6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "39",
+      "expValue": "42"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "N6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "40",
+      "expValue": "43"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "R6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "41",
+      "expValue": "44"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "S6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "34",
+      "expValue": "36"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "Y6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "42",
+      "expValue": "45"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AE6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "43",
+      "expValue": "46"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AI6",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "44",
+      "expValue": "47"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "B7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "46057",
+      "expValue": "48"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "G7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "45",
+      "expValue": "49"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "H7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "46",
+      "expValue": "50"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "N7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "47",
+      "expValue": "51"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "R7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "48",
+      "expValue": "52"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "S7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "34",
+      "expValue": "36"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "Y7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "49",
+      "expValue": "53"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AE7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "50",
+      "expValue": "54"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AI7",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "51",
+      "expValue": "55"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "B8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "46058",
+      "expValue": "56"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "G8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "52",
+      "expValue": "57"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "H8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "53",
+      "expValue": "58"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "N8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "54",
+      "expValue": "59"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "R8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "55",
+      "expValue": "60"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "S8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "34",
+      "expValue": "36"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "Y8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "56",
+      "expValue": "61"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AE8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "57",
+      "expValue": "62"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AI8",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "58",
+      "expValue": "63"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "AN8",
+      "type": "MISSING_IN_EXPORT",
+      "srcFormula": "None",
+      "srcValue": "None"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "B9",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "46059",
+      "expValue": "64"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "G9",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "59",
+      "expValue": "65"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "H9",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "60",
+      "expValue": "66"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "R9",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "61",
+      "expValue": "67"
+    },
+    {
+      "sheet": "Summary",
+      "cell": "S9",
+      "type": "VALUE_MISMATCH",
+      "srcFormula": "None",
+      "srcValue": "34",
+      "expValue": "36"
+    }
+  ]
+}

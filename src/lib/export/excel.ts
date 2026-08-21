@@ -9,9 +9,6 @@ export async function exportWorkbookToExcel(
   onProgress?: (percent: number, message: string) => void
 ): Promise<Blob> {
   const api = univerAPI || (typeof window !== 'undefined' ? (window as any).univerAPI : null);
-  if (typeof window !== 'undefined') {
-    (window as any).exportWorkbookToExcel = exportWorkbookToExcel;
-  }
 
   // Commit any active cell edit before snapshot so newly typed values are saved
   try {
@@ -61,4 +58,8 @@ export async function exportWorkbookToExcel(
 
     worker.postMessage({ snapshot, format: 'xlsx' });
   });
+}
+
+if (typeof window !== 'undefined') {
+  (window as any).exportWorkbookToExcel = exportWorkbookToExcel;
 }

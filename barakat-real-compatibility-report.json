@@ -1,0 +1,382 @@
+{
+  "finalSummary": {
+    "totalTested": 6304535,
+    "totalPass": 2275842,
+    "totalFail": 4028693,
+    "passPercentage": "36.10%",
+    "perSheetAudit": {
+      "Summary": {
+        "pass": 3936,
+        "fail": 211
+      },
+      "Summary Hadiah": {
+        "pass": 5879,
+        "fail": 1066
+      },
+      "Tren Hadiah": {
+        "pass": 48163,
+        "fail": 11
+      },
+      "Entries data": {
+        "pass": 2217084,
+        "fail": 4027073
+      },
+      "Kode Unik KOL": {
+        "pass": 780,
+        "fail": 332
+      }
+    }
+  },
+  "sampleTable": [
+    {
+      "Sheet": "Summary",
+      "Cell": "B2",
+      "OriginalWPS": "Summary Entries Daily",
+      "ExportedInWPS": "Summary Entries Daily",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "H2",
+      "OriginalWPS": "Summary Entries Weekly",
+      "ExportedInWPS": "Summary Entries Weekly",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "N2",
+      "OriginalWPS": "Invalid Reason",
+      "ExportedInWPS": "Invalid Reason",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "R2",
+      "OriginalWPS": "Summary By Kota",
+      "ExportedInWPS": "Summary By Kota",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "Y2",
+      "OriginalWPS": "Summary By Propinsi",
+      "ExportedInWPS": "Summary By Propinsi",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AE2",
+      "OriginalWPS": "Summary Store",
+      "ExportedInWPS": "Summary Store",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AI2",
+      "OriginalWPS": "Summary Prize",
+      "ExportedInWPS": "Summary Prize",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "B3",
+      "OriginalWPS": "Tanggal",
+      "ExportedInWPS": "Tanggal",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "C3",
+      "OriginalWPS": "Entries Valid",
+      "ExportedInWPS": "Entries Valid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "D3",
+      "OriginalWPS": "Entries Invalid",
+      "ExportedInWPS": "Entries Invalid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "E3",
+      "OriginalWPS": "Total Entries",
+      "ExportedInWPS": "Total Entries",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "F3",
+      "OriginalWPS": "Unik Konsumen Baru",
+      "ExportedInWPS": "Unik Konsumen Baru",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "H3",
+      "OriginalWPS": "Week",
+      "ExportedInWPS": "Week",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "I3",
+      "OriginalWPS": "Entries Valid",
+      "ExportedInWPS": "Entries Valid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "J3",
+      "OriginalWPS": "Entries Invalid",
+      "ExportedInWPS": "Entries Invalid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "K3",
+      "OriginalWPS": "Total Entries",
+      "ExportedInWPS": "Total Entries",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "L3",
+      "OriginalWPS": "Unik Konsumen Baru",
+      "ExportedInWPS": "Unik Konsumen Baru",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "N3",
+      "OriginalWPS": "Invalid Reason",
+      "ExportedInWPS": "Invalid Reason",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "O3",
+      "OriginalWPS": "Jumlah",
+      "ExportedInWPS": "Jumlah",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "P3",
+      "OriginalWPS": "Empty",
+      "ExportedInWPS": "Jumlah",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "R3",
+      "OriginalWPS": "Kota",
+      "ExportedInWPS": "Kota",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "S3",
+      "OriginalWPS": "Propinsi",
+      "ExportedInWPS": "Propinsi",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "T3",
+      "OriginalWPS": "Entries Valid",
+      "ExportedInWPS": "Entries Valid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "U3",
+      "OriginalWPS": "Entries Invalid",
+      "ExportedInWPS": "Entries Invalid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "V3",
+      "OriginalWPS": "Total Entries",
+      "ExportedInWPS": "Total Entries",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "W3",
+      "OriginalWPS": "Unik Konsumen Baru",
+      "ExportedInWPS": "Unik Konsumen Baru",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "Y3",
+      "OriginalWPS": "Propinsi",
+      "ExportedInWPS": "Propinsi",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "Z3",
+      "OriginalWPS": "Entries Valid",
+      "ExportedInWPS": "Entries Valid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AA3",
+      "OriginalWPS": "Entries Invalid",
+      "ExportedInWPS": "Entries Invalid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AB3",
+      "OriginalWPS": "Total Entries",
+      "ExportedInWPS": "Total Entries",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AC3",
+      "OriginalWPS": "Unik Konsumen Baru",
+      "ExportedInWPS": "Unik Konsumen Baru",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AE3",
+      "OriginalWPS": "Store",
+      "ExportedInWPS": "Store",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AF3",
+      "OriginalWPS": "Jumlah Entries Valid",
+      "ExportedInWPS": "Jumlah Entries Valid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AG3",
+      "OriginalWPS": "Empty",
+      "ExportedInWPS": "Jumlah Entries Valid",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AI3",
+      "OriginalWPS": "Hadiah",
+      "ExportedInWPS": "Hadiah",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AJ3",
+      "OriginalWPS": "Alokasi",
+      "ExportedInWPS": "Alokasi",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AK3",
+      "OriginalWPS": "Hadiah Terklaim",
+      "ExportedInWPS": "Hadiah Terklaim",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AL3",
+      "OriginalWPS": "Approved",
+      "ExportedInWPS": "Approved",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AM3",
+      "OriginalWPS": "Rejected",
+      "ExportedInWPS": "Rejected",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "A4",
+      "OriginalWPS": "w1",
+      "ExportedInWPS": "w1",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "B4",
+      "OriginalWPS": "46054",
+      "ExportedInWPS": "2026-02-01T00:00:00.000Z",
+      "Status": "FAIL (Value Mismatch)"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "C4",
+      "OriginalWPS": "0",
+      "ExportedInWPS": "0",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "D4",
+      "OriginalWPS": "0",
+      "ExportedInWPS": "0",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "E4",
+      "OriginalWPS": "0",
+      "ExportedInWPS": "0",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "F4",
+      "OriginalWPS": "0",
+      "ExportedInWPS": "0",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "G4",
+      "OriginalWPS": "w1",
+      "ExportedInWPS": "w1",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "H4",
+      "OriginalWPS": "W1 (01-08 Feb 26)",
+      "ExportedInWPS": "W1 (01-08 Feb 26)",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "I4",
+      "OriginalWPS": "0",
+      "ExportedInWPS": "0",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "J4",
+      "OriginalWPS": "0",
+      "ExportedInWPS": "0",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "K4",
+      "OriginalWPS": "0",
+      "ExportedInWPS": "0",
+      "Status": "PASS"
+    }
+  ]
+}

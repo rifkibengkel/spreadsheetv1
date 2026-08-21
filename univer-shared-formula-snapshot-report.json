@@ -1,0 +1,93 @@
+{
+  "Summary Registrasi": {
+    "sheetId": "Summary Registrasi",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 2439,
+    "siSamples": []
+  },
+  "Summary": {
+    "sheetId": "Summary",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 2840,
+    "siSamples": []
+  },
+  "Summary Valid": {
+    "sheetId": "Summary Valid",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 1788,
+    "siSamples": []
+  },
+  "Registrasi 2025": {
+    "sheetId": "Registrasi 2025",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 0,
+    "siSamples": []
+  },
+  "Entries 2025": {
+    "sheetId": "Entries 2025",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 0,
+    "siSamples": []
+  },
+  "Komparasi": {
+    "sheetId": "Komparasi",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 141,
+    "siSamples": []
+  },
+  "Top Point": {
+    "sheetId": "Top Point",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 450,
+    "siSamples": []
+  },
+  "Unik Konsumen": {
+    "sheetId": "Unik Konsumen",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 602997,
+    "siSamples": []
+  },
+  "Data All": {
+    "sheetId": "Data All",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 1,
+    "siSamples": []
+  },
+  "Data Valid": {
+    "sheetId": "Data Valid",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 0,
+    "siSamples": []
+  },
+  "E-Voucher & E-Wallet": {
+    "sheetId": "E-Voucher & E-Wallet",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 4636,
+    "siSamples": []
+  },
+  "Direct Prize": {
+    "sheetId": "Direct Prize",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 1768,
+    "siSamples": []
+  },
+  "Hadiah Fisik": {
+    "sheetId": "Hadiah Fisik",
+    "hasFAndSi": 0,
+    "hasSiOnly": 0,
+    "hasFOnly": 0,
+    "siSamples": []
+  }
+}

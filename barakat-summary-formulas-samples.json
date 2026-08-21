@@ -1,0 +1,152 @@
+[
+  {
+    "cell": "C4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$B$2:$B$155810=Summary!$B4,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;valid&quot;,1,0)))",
+    "value": "0"
+  },
+  {
+    "cell": "D4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$B$2:$B$155810=Summary!$B4,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;invalid&quot;,1,0)))",
+    "value": "0"
+  },
+  {
+    "cell": "E4",
+    "attrs": "",
+    "formula": "C4+D4",
+    "value": "0"
+  },
+  {
+    "cell": "F4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$B$2:$B$155810=Summary!$B4,IF(&apos;Entries data&apos;!$U$2:$U$155810=1,1,0)))",
+    "value": "0"
+  },
+  {
+    "cell": "I4",
+    "attrs": "",
+    "formula": "SUMIF($A$4:$A$188,$G4,C$4:C$188)",
+    "value": "0"
+  },
+  {
+    "cell": "J4",
+    "attrs": "",
+    "formula": "SUMIF($A$4:$A$188,$G4,D$4:D$188)",
+    "value": "0"
+  },
+  {
+    "cell": "K4",
+    "attrs": "",
+    "formula": "SUMIF($A$4:$A$188,$G4,E$4:E$188)",
+    "value": "0"
+  },
+  {
+    "cell": "L4",
+    "attrs": "",
+    "formula": "SUMIF($A$4:$A$188,$G4,F$4:F$188)",
+    "value": "0"
+  },
+  {
+    "cell": "O4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;invalid&quot;,IF(&apos;Entries data&apos;!$Q$2:$Q$155810=Summary!N4,1,0)))",
+    "value": "11218"
+  },
+  {
+    "cell": "P4",
+    "attrs": "",
+    "formula": "O4/$O$10",
+    "value": "0.532314700578912"
+  },
+  {
+    "cell": "T4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$K$2:$K$155810=Summary!$R4,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;valid&quot;,1,0)))",
+    "value": "4236"
+  },
+  {
+    "cell": "U4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$K$2:$K$155810=Summary!$R4,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;invalid&quot;,1,0)))",
+    "value": "3752"
+  },
+  {
+    "cell": "V4",
+    "attrs": "",
+    "formula": "T4+U4",
+    "value": "7988"
+  },
+  {
+    "cell": "W4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$K$2:$K$155810=Summary!$R4,IF(&apos;Entries data&apos;!$U$2:$U$155810=1,1,0)))",
+    "value": "4398"
+  },
+  {
+    "cell": "Z4",
+    "attrs": "",
+    "formula": "SUMIF($S$4:$S$427,$Y4,T$4:T$427)",
+    "value": "4236"
+  },
+  {
+    "cell": "AA4",
+    "attrs": "",
+    "formula": "SUMIF($S$4:$S$427,$Y4,U$4:U$427)",
+    "value": "3752"
+  },
+  {
+    "cell": "AB4",
+    "attrs": "",
+    "formula": "SUMIF($S$4:$S$427,$Y4,V$4:V$427)",
+    "value": "7988"
+  },
+  {
+    "cell": "AC4",
+    "attrs": "",
+    "formula": "SUMIF($S$4:$S$427,$Y4,W$4:W$427)",
+    "value": "4398"
+  },
+  {
+    "cell": "AF4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;valid&quot;,IF(&apos;Entries data&apos;!$O$2:$O$155810=Summary!AE4,1,0)))",
+    "value": "14407"
+  },
+  {
+    "cell": "AG4",
+    "attrs": "",
+    "formula": "AF4/$AF$11",
+    "value": "0.188672079622839"
+  },
+  {
+    "cell": "AK4",
+    "attrs": "",
+    "formula": "COUNTIF(&apos;Entries data&apos;!$X$2:$X$155810,Summary!AI4)",
+    "value": "2"
+  },
+  {
+    "cell": "AL4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$X$2:$X$155810=Summary!$AI4,IF(&apos;Entries data&apos;!$V$2:$V$155810&lt;&gt;&quot;Rejected&quot;,1,0)))",
+    "value": "2"
+  },
+  {
+    "cell": "AM4",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$X$2:$X$155810=Summary!$AI4,IF(&apos;Entries data&apos;!$V$2:$V$155810=Summary!AM$3,1,0)))",
+    "value": "0"
+  },
+  {
+    "cell": "C5",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$B$2:$B$155810=Summary!$B5,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;valid&quot;,1,0)))",
+    "value": "0"
+  },
+  {
+    "cell": "D5",
+    "attrs": "",
+    "formula": "SUM(IF(&apos;Entries data&apos;!$B$2:$B$155810=Summary!$B5,IF(&apos;Entries data&apos;!$M$2:$M$155810=&quot;invalid&quot;,1,0)))",
+    "value": "0"
+  }
+]

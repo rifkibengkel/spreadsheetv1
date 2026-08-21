@@ -1,0 +1,45 @@
+{
+  "filePath": "C:\\Users\\BKKI-1\\Documents\\report barakat.xlsx",
+  "fileSizeMB": "27.37",
+  "totalSheets": 5,
+  "totalCells": 6304535,
+  "totalFormulas": 144286,
+  "totalValues": 2416287,
+  "perSheetStats": [
+    {
+      "sheet": "Summary",
+      "file": "xl/worksheets/sheet1.xml",
+      "cells": 4147,
+      "formulas": 2749,
+      "cachedValues": 4116
+    },
+    {
+      "sheet": "Summary Hadiah",
+      "file": "xl/worksheets/sheet2.xml",
+      "cells": 6945,
+      "formulas": 4725,
+      "cachedValues": 6063
+    },
+    {
+      "sheet": "Tren Hadiah",
+      "file": "xl/worksheets/sheet3.xml",
+      "cells": 48174,
+      "formulas": 45795,
+      "cachedValues": 48077
+    },
+    {
+      "sheet": "Entries data",
+      "file": "xl/worksheets/sheet4.xml",
+      "cells": 6244157,
+      "formulas": 90677,
+      "cachedValues": 2357026
+    },
+    {
+      "sheet": "Kode Unik KOL",
+      "file": "xl/worksheets/sheet5.xml",
+      "cells": 1112,
+      "formulas": 340,
+      "cachedValues": 1005
+    }
+  ]
+}

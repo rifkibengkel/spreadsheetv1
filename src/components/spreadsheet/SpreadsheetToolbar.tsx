@@ -117,14 +117,14 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
           📥 Import File (Excel/CSV)
         </button>
 
-        <button
+        {/* <button
           onClick={handleSaveToDesktop}
           disabled={savingDesktop}
           style={quickSaveBtnStyle(savingDesktop)}
           title="Simpan perubahan terbaru langsung ke Desktop Windows"
         >
           {savingDesktop ? '⏳ Menyimpan...' : '💾 Simpan ke Desktop'}
-        </button>
+        </button> */}
 
         <button onClick={() => setShowExport(true)} style={exportBtnStyle}>
           📤 Ekspor & Save

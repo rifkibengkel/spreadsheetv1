@@ -1,0 +1,292 @@
+{
+  "forensicSummary": {
+    "beforeStats": {
+      "populatedCells": 2285656,
+      "formulaCells": 144293,
+      "sharedMasterCells": 0,
+      "sharedSlaveCells": 0
+    },
+    "afterStats": {
+      "populatedCells": 2285656,
+      "formulaCells": 144293,
+      "arrayFormulas": 52060,
+      "cachedValues": 2194915
+    },
+    "lossAudit": {
+      "totalValuesLost": 0,
+      "totalCachedResultsLost": 0
+    }
+  },
+  "comparisonTable": [
+    {
+      "Sheet": "Summary",
+      "Cell": "B2",
+      "ValueBefore": "Summary Entries Daily",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "0",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "H2",
+      "ValueBefore": "Summary Entries Weekly",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "1",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "N2",
+      "ValueBefore": "Invalid Reason",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "2",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "R2",
+      "ValueBefore": "Summary By Kota",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "3",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "Y2",
+      "ValueBefore": "Summary By Propinsi",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "4",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AE2",
+      "ValueBefore": "Summary Store",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "5",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AI2",
+      "ValueBefore": "Summary Prize",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "6",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "B3",
+      "ValueBefore": "Tanggal",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "7",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "C3",
+      "ValueBefore": "Entries Valid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "8",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "D3",
+      "ValueBefore": "Entries Invalid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "9",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "E3",
+      "ValueBefore": "Total Entries",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "10",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "F3",
+      "ValueBefore": "Unik Konsumen Baru",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "11",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "H3",
+      "ValueBefore": "Week",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "12",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "I3",
+      "ValueBefore": "Entries Valid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "8",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "J3",
+      "ValueBefore": "Entries Invalid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "9",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "K3",
+      "ValueBefore": "Total Entries",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "10",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "L3",
+      "ValueBefore": "Unik Konsumen Baru",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "11",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "N3",
+      "ValueBefore": "Invalid Reason",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "2",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "O3",
+      "ValueBefore": "Jumlah",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "13",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "P3",
+      "ValueBefore": "Jumlah",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "13",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "R3",
+      "ValueBefore": "Kota",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "14",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "S3",
+      "ValueBefore": "Propinsi",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "15",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "T3",
+      "ValueBefore": "Entries Valid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "8",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "U3",
+      "ValueBefore": "Entries Invalid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "9",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "V3",
+      "ValueBefore": "Total Entries",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "10",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "W3",
+      "ValueBefore": "Unik Konsumen Baru",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "11",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "Y3",
+      "ValueBefore": "Propinsi",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "15",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "Z3",
+      "ValueBefore": "Entries Valid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "8",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AA3",
+      "ValueBefore": "Entries Invalid",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "9",
+      "Status": "PASS"
+    },
+    {
+      "Sheet": "Summary",
+      "Cell": "AB3",
+      "ValueBefore": "Total Entries",
+      "FormulaBefore": "None",
+      "ExportedFormula": "None",
+      "ExportedValue": "10",
+      "Status": "PASS"
+    }
+  ]
+}

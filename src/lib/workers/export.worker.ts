@@ -73,7 +73,7 @@ self.onmessage = async (e: MessageEvent) => {
 
     const sortedSheetIds = snapshot.sheetOrder || Object.keys(snapshot.sheets);
 
-    // Collect all available worksheet names for precise sheet-name quoting in formulas
+    // Ambil nama sheet yang tersedia terlebih dahulu untuk sanitasi formula
     const availableSheetNames: string[] = sortedSheetIds
       .map((id: string) => snapshot.sheets[id]?.name)
       .filter((name: any): name is string => typeof name === 'string' && name.length > 0);
@@ -93,7 +93,6 @@ self.onmessage = async (e: MessageEvent) => {
     }
 
     let totalRowsOverall = 0;
-
     sortedSheetIds.forEach((sheetId: string) => {
       const sData = snapshot.sheets[sheetId];
       if (sData && sData.cellData) {
@@ -103,7 +102,6 @@ self.onmessage = async (e: MessageEvent) => {
     if (totalRowsOverall === 0) totalRowsOverall = 1;
 
     let processedRowsOverall = 0;
-    const CHUNK_SIZE = 1000;
 
     for (let sIdx = 0; sIdx < sortedSheetIds.length; sIdx++) {
       const sheetId = sortedSheetIds[sIdx];
@@ -117,7 +115,7 @@ self.onmessage = async (e: MessageEvent) => {
       // Track shared formulas per sheet (si -> master formula string)
       const sharedFormulaMap = new Map<string, string>();
 
-      // First pass: register all master shared formulas
+      // First pass: register master formulas
       for (let rIdx = 0; rIdx < rowKeys.length; rIdx++) {
         const rowIndex = rowKeys[rIdx];
         const cols = cellDataRaw[rowIndex];
@@ -154,7 +152,6 @@ self.onmessage = async (e: MessageEvent) => {
               if (parsedFormula.startsWith('=')) {
                 parsedFormula = parsedFormula.substring(1);
               }
-              // Sanitize unquoted sheet names containing spaces, &, -, etc.
               parsedFormula = sanitizeSheetNames(parsedFormula);
 
               const isArrayFormula = cellPay.t === 1 || 
@@ -174,16 +171,11 @@ self.onmessage = async (e: MessageEvent) => {
                 formulaRes = Number(formulaRes);
               }
 
-              const cellObj: any = {
-                formula: parsedFormula,
-                result: formulaRes,
-              };
-
+              const cellObj: any = { formula: parsedFormula, result: formulaRes };
               if (isArrayFormula) {
                 cellObj.shareType = 'array';
                 cellObj.ref = cell.address;
               }
-
               cell.value = cellObj;
             } else if (cellPay.v !== undefined && cellPay.v !== null) {
               if (typeof cellPay.v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(cellPay.v)) {
@@ -198,37 +190,41 @@ self.onmessage = async (e: MessageEvent) => {
                 cell.value = cellPay.v;
               }
             } else if (cellPay.p && cellPay.p.body && typeof cellPay.p.body.dataStream === 'string') {
-              const rawText = cellPay.p.body.dataStream.replace(/[\r\n]+$/, '');
-              if (rawText.length > 0) {
-                cell.value = rawText;
-              }
+              cell.value = cellPay.p.body.dataStream.replace(/[\r\n]+$/, '');
             }
           }
         }
 
         processedRowsOverall++;
-        if (rIdx % CHUNK_SIZE === 0 || rIdx === rowKeys.length - 1) {
-          const percent = Math.min(80, Math.round(5 + (processedRowsOverall / totalRowsOverall) * 75));
-          self.postMessage({
-            type: 'PROGRESS',
-            percent,
-            message: `Memproses sheet '${sheetData.name || sheetId}' (${rIdx + 1}/${rowKeys.length} baris)...`,
+
+        if (processedRowsOverall % 1000 === 0 || processedRowsOverall === totalRowsOverall) {
+          const percent = Math.min(85, Math.round(5 + (processedRowsOverall / totalRowsOverall) * 80));
+          self.postMessage({ 
+            type: 'PROGRESS', 
+            percent, 
+            message: `Memproses data sheet "${sheetData.name || sheetId}" (${processedRowsOverall}/${totalRowsOverall} baris total)...` 
           });
           await new Promise((resolve) => setTimeout(resolve, 0));
         }
       }
+
+      sharedFormulaMap.clear();
+      delete snapshot.sheets[sheetId];
     }
 
-    // Release snapshot reference immediately after copying into ExcelJS DOM
     snapshot = null;
 
     self.postMessage({ type: 'PROGRESS', percent: 85, message: 'Mengompresi data ke format .xlsx (Worker)...' });
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     if (!exportWb) throw new Error('Export workbook is invalid.');
-    const arrayBuffer = await exportWb.xlsx.writeBuffer();
+    const arrayBuffer = await exportWb.xlsx.writeBuffer({
+      zip: {
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 },
+      },
+    } as any);
 
-    // Release ExcelJS Workbook DOM immediately after writeBuffer
     exportWb = null;
 
     const transferableBuffer = arrayBuffer instanceof ArrayBuffer ? arrayBuffer : (arrayBuffer as any)?.buffer;

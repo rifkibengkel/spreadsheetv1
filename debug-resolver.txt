@@ -1,6 +1,0 @@
-Summary cell 0,0: {"v":123,"t":2}
-Summary Hadiah cell 0,0: {"f":"=Summary!A1"}
-Cell f: =Summary!A1
-Match result: ["=Summary!A1","Summary",null,"Summary","A","1"]
-Target: sheet=Summary, col=A, row=1
-Target cell in Summary R0C0: {"v":123,"t":2}

@@ -1,9 +1,0 @@
-{
-  "extracted": {
-    "cellA1": "Alpha Test",
-    "cellA2": 99999,
-    "cellA3": "Edited Row 3",
-    "cellA4": "=A2+1"
-  },
-  "success": true
-}

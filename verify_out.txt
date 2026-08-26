@@ -1,6 +1,0 @@
-======================================================================
-STARTING FORENSIC VERIFICATION ON REAL FILE: updatehexos.xlsx
-FILE PATH: C:\Users\BKKI-1\Desktop\updatehexos.xlsx
-======================================================================
-
-Step 1: Reading and parsing workbook with ExcelJS...

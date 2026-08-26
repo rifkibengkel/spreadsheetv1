@@ -1,7 +1,0 @@
-TimeoutError: Waiting failed: 180000ms exceeded
-    at new WaitTask (file:///C:/Users/BKKI-1/.gemini/antigravity/scratch/sheet-V-2/node_modules/puppeteer-core/lib/puppeteer/common/WaitTask.js:46:34)
-    at IsolatedWorld.waitForFunction (file:///C:/Users/BKKI-1/.gemini/antigravity/scratch/sheet-V-2/node_modules/puppeteer-core/lib/puppeteer/api/Realm.js:49:26)
-    at CdpFrame.waitForFunction (file:///C:/Users/BKKI-1/.gemini/antigravity/scratch/sheet-V-2/node_modules/puppeteer-core/lib/puppeteer/api/Frame.js:585:43)
-    at CdpFrame.<anonymous> (file:///C:/Users/BKKI-1/.gemini/antigravity/scratch/sheet-V-2/node_modules/puppeteer-core/lib/puppeteer/util/decorators.js:101:27)
-    at CdpPage.waitForFunction (file:///C:/Users/BKKI-1/.gemini/antigravity/scratch/sheet-V-2/node_modules/puppeteer-core/lib/puppeteer/api/Page.js:1464:37)
-    at runFinalIntegrityValidation (C:\Users\BKKI-1\.gemini\antigravity\scratch\sheet-V-2\execute-final-integrity-validation.js:73:16)

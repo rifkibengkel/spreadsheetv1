@@ -1,9 +1,0 @@
-{
-  "startMem": 15,
-  "stage1SnapshotMem": 357,
-  "stage2ExcelJSDomMem": 806,
-  "stage3WriteBufferMem": 1715,
-  "stage4BlobMem": 1715,
-  "bufferSizeBytes": 14713902,
-  "peakSpikeMB": 1700
-}

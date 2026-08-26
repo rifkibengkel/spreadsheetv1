@@ -1,1 +1,0 @@
-import('@univerjs/core').then(m => console.log(Object.keys(m).filter(k => k.toLowerCase().includes('import') || k.toLowerCase().includes('export'))));

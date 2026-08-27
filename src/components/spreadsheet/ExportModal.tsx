@@ -238,9 +238,9 @@ console.log(blob,"BLOBD");
           <button onClick={handleDownload} disabled={loading} style={exportBtnStyle}>
             📥 Unduh File
           </button>
-          <button onClick={handleSaveToDesktop} disabled={loading} style={desktopBtnStyle}>
+          {/* <button onClick={handleSaveToDesktop} disabled={loading} style={desktopBtnStyle}>
             💾 Simpan ke Desktop
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

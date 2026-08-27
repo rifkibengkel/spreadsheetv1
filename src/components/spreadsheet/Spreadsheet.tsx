@@ -8,6 +8,7 @@ import '@univerjs/presets/lib/styles/preset-sheets-core.css';
 import '@univerjs/preset-sheets-core/lib/index.css';
 
 import { initialWorkbookData } from '@/lib/univer/univerConfig';
+import { workbookSession } from '@/lib/session/workbookSession';
 import SpreadsheetToolbar from './SpreadsheetToolbar';
 
 export default function Spreadsheet() {
@@ -76,6 +77,26 @@ export default function Spreadsheet() {
       // Initialize the workbook snapshot
       api.createUniverSheet(initialWorkbookData);
       setUniverAPI(api);
+
+      // Register mutation listener for copy-through dirty sheet tracking
+      try {
+        if (api.onCommandExecuted) {
+          api.onCommandExecuted((commandInfo: any) => {
+            const subUnitId = commandInfo?.params?.subUnitId || commandInfo?.params?.sheetId;
+            if (subUnitId) {
+              workbookSession.markSheetDirty(subUnitId);
+            } else {
+              const activeSheet = api.getActiveWorkbook?.()?.getActiveSheet?.();
+              if (activeSheet) {
+                const sName = activeSheet.getSheetName?.() || activeSheet.getSheetId?.();
+                if (sName) workbookSession.markSheetDirty(sName);
+              }
+            }
+          });
+        }
+      } catch (cmdErr) {
+        console.warn('Univer command tracking setup warning:', cmdErr);
+      }
 
       setTimeout(() => {
         if (typeof window !== 'undefined') {

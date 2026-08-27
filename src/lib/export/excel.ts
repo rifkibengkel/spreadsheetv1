@@ -1,44 +1,140 @@
 import type { IWorkbookData } from '@univerjs/core';
+import { workbookSession } from '@/lib/session/workbookSession';
+
+const EXPORT_ROW_CHUNK_SIZE = 2500;
+
+function logMemory(tag: string) {
+  if (typeof window !== 'undefined' && (window.performance as any)?.memory) {
+    const mem = (window.performance as any).memory;
+    const usedMB = (mem.usedJSHeapSize / 1024 / 1024).toFixed(2);
+    const totalMB = (mem.totalJSHeapSize / 1024 / 1024).toFixed(2);
+    console.log(`[MEMORY][${tag}] Used: ${usedMB} MB / Total: ${totalMB} MB`);
+  }
+}
 
 /**
- * Offloads Excel (.xlsx) export to a dedicated background Web Worker
- * to eliminate main-thread V8 heap memory spikes and prevent "Aw Snap! Out of Memory" crashes.
+ * High-performance browser-side Excel XLSX exporter.
+ * Uses Copy-Through architecture when original workbook is available (0ms CPU for clean sheets),
+ * falling back to streaming Web Worker generation when needed.
  */
 export async function exportWorkbookToExcel(
   univerAPI: any,
   onProgress?: (percent: number, message: string) => void
 ): Promise<Blob> {
   const api = univerAPI || (typeof window !== 'undefined' ? (window as any).univerAPI : null);
+  if (!api) throw new Error('Univer API is not initialized.');
 
-  // Commit any active cell edit before snapshot so newly typed values are saved
+  onProgress?.(2, 'Menyiapkan proses ekspor Excel...');
+  logMemory('START');
+
+  // Step 1: Force active cell editing commit
   try {
-    if (api.endEdit) {
-      api.endEdit();
+    const sheet = api.getActiveWorkbook ? api.getActiveWorkbook().getActiveSheet() : null;
+    if (sheet && sheet.endEditing) {
+      sheet.endEditing();
     } else if (api.getCommandService) {
-      api.getCommandService().executeCommand('sheet.command.set-activate-cell-edit', { active: false, save: true });
+      api
+        .getCommandService()
+        .syncExecuteCommand(
+          'sheet.command.set-cell-edit-visible',
+          { active: false, save: true }
+        );
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[EXPORT] endEdit warning:', e);
+  }
 
-  const activeWorkbook = api.getActiveWorkbook ? api.getActiveWorkbook() : (api.getActiveUniverSheet ? api.getActiveUniverSheet() : null);
-  if (!activeWorkbook) throw new Error('No active workbook found in Univer.');
+  // Step 2: Get active workbook
+  const activeWorkbook = api?.getActiveWorkbook
+    ? api.getActiveWorkbook()
+    : api?.getActiveUniverSheet
+      ? api.getActiveUniverSheet()
+      : null;
 
-  const snapshot: IWorkbookData = activeWorkbook.save();
+  if (!activeWorkbook) {
+    throw new Error('No active workbook found in Univer.');
+  }
 
+  // Step 3: Get snapshot reference
+  const workbookSnapshot: IWorkbookData = activeWorkbook.getSnapshot
+    ? activeWorkbook.getSnapshot()
+    : activeWorkbook.save();
+
+  const sortedSheetIds: string[] = activeWorkbook.getSheetOrders
+    ? (activeWorkbook.getSheetOrders() as string[])
+    : (workbookSnapshot.sheetOrder || Object.keys(workbookSnapshot.sheets || {}));
+
+  const availableSheetNames: string[] = sortedSheetIds
+    .map((id: string) => workbookSnapshot.sheets?.[id]?.name)
+    .filter((name: any): name is string => typeof name === 'string' && name.length > 0);
+
+  // Check Copy-Through capability
+  const hasOriginal = workbookSession.hasOriginalWorkbook();
+  const dirtySheetIds = workbookSession.getDirtySheetIds();
+  const originalBuffer = hasOriginal ? workbookSession.getOriginalBuffer() : null;
+
+  const dirtySheetIndices: number[] = [];
+  sortedSheetIds.forEach((id, idx) => {
+    const sName = workbookSnapshot.sheets?.[id]?.name || id;
+    if (!hasOriginal || dirtySheetIds.has(id) || dirtySheetIds.has(sName)) {
+      dirtySheetIndices.push(idx + 1);
+    }
+  });
+
+  const isCopyThrough = hasOriginal && originalBuffer !== null;
+  console.log(`[EXPORT] Mode: ${isCopyThrough ? 'COPY_THROUGH' : 'GREENFIELD'}, Dirty Sheets: ${dirtySheetIndices.length}/${sortedSheetIds.length}`);
+
+  // Calculate total rows across all sheets for smooth progress reporting
+  let globalTotalRows = 0;
+  sortedSheetIds.forEach((sId) => {
+    const s = workbookSnapshot.sheets?.[sId];
+    if (s?.cellData) {
+      globalTotalRows += Object.keys(s.cellData).length;
+    }
+  });
+  if (globalTotalRows === 0) globalTotalRows = 1;
+
+  // Step 4: Initialize Web Worker
   return new Promise<Blob>((resolve, reject) => {
     let worker: Worker | null = null;
+    let pendingAckResolver: (() => void) | null = null;
+
     try {
-      worker = new Worker(new URL('../workers/export.worker.ts', import.meta.url), { type: 'module' });
+      worker = new Worker(
+        new URL('../workers/export.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
     } catch (err) {
-      // Fallback path for Next.js Web Worker resolving
-      worker = new Worker('/_next/static/chunks/src_lib_workers_export_worker_ts.js', { type: 'module' });
+      try {
+        worker = new Worker(
+          '/_next/static/chunks/src_lib_workers_export_worker_ts.js',
+          { type: 'module' }
+        );
+      } catch (fallbackErr) {
+        reject(fallbackErr);
+        return;
+      }
+    }
+
+    if (!worker) {
+      reject(new Error('[EXPORT] Worker could not be created.'));
+      return;
     }
 
     worker.onmessage = (e: MessageEvent) => {
       const { type, percent, message, buffer, error } = e.data;
 
-      if (type === 'PROGRESS') {
+      if (type === 'ACK' || type === 'CHUNK_ACK' || type === 'SHEET_ACK') {
+        if (pendingAckResolver) {
+          const res = pendingAckResolver;
+          pendingAckResolver = null;
+          res();
+        }
+      } else if (type === 'PROGRESS') {
         onProgress?.(percent, message);
       } else if (type === 'COMPLETE') {
+        console.log('[EXPORT] COMPLETE message received from Worker');
+        logMemory('COMPLETE');
         onProgress?.(100, 'File Excel (.xlsx) selesai dibuat!');
         const blob = new Blob([buffer], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -46,17 +142,134 @@ export async function exportWorkbookToExcel(
         if (worker) worker.terminate();
         resolve(blob);
       } else if (type === 'ERROR') {
+        console.error('[EXPORT] Worker ERROR:', error);
         if (worker) worker.terminate();
         reject(new Error(error || 'Export worker failed.'));
       }
     };
 
     worker.onerror = (err) => {
+      console.error('[EXPORT] WORKER RUNTIME ERROR:', err);
       if (worker) worker.terminate();
       reject(new Error(err.message || 'Export worker runtime error.'));
     };
 
-    worker.postMessage({ snapshot, format: 'xlsx' });
+    const sendWithAck = (msg: any): Promise<void> => {
+      return new Promise<void>((res) => {
+        pendingAckResolver = res;
+        worker!.postMessage(msg);
+      });
+    };
+
+    // Step 5: Incremental Processing & Copy-Through Orchestration
+    (async () => {
+      try {
+        let processedGlobalRows = 0;
+
+        console.log('[EXPORT] Initializing worker workbook');
+        await sendWithAck({
+          type: 'INIT_WORKBOOK',
+          mode: isCopyThrough ? 'COPY_THROUGH' : 'GREENFIELD',
+          originalBuffer: isCopyThrough ? originalBuffer : undefined,
+          dirtySheetIndices,
+          availableSheetNames,
+          format: 'xlsx',
+          sheetsMetadata: sortedSheetIds.map((id, index) => ({
+            id,
+            index: index + 1,
+            name: workbookSnapshot.sheets?.[id]?.name || id,
+          })),
+        });
+
+        for (let sIdx = 0; sIdx < sortedSheetIds.length; sIdx++) {
+          const sheetId = sortedSheetIds[sIdx];
+          const sData = workbookSnapshot.sheets?.[sheetId];
+          const sheetName = sData?.name || sheetId;
+          const sheetNum = sIdx + 1;
+          const isDirty = dirtySheetIndices.includes(sheetNum);
+
+          const cellDataRaw = sData?.cellData || {};
+          const rowKeys = Object.keys(cellDataRaw).map(Number).sort((a, b) => a - b);
+          const totalRows = rowKeys.length;
+
+          // In Copy-Through mode, skip clean sheets entirely!
+          if (isCopyThrough && !isDirty) {
+            console.log(`[EXPORT] Sheet ${sheetName} (${sheetNum}) is CLEAN -> Copied directly from original ZIP (0ms CPU)`);
+            processedGlobalRows += totalRows;
+            const globalPercent = Math.min(85, Math.round(5 + (processedGlobalRows / globalTotalRows) * 80));
+            onProgress?.(globalPercent, `Menyalin sheet "${sheetName}" (Zero-Copy)...`);
+            continue;
+          }
+
+          if (!sData || !sData.cellData) continue;
+
+          console.log(`[EXPORT] Serializing dirty sheet: ${sheetName} (${sheetNum}/${sortedSheetIds.length})`);
+          logMemory(`SHEET_${sheetNum}_START`);
+
+          await sendWithAck({
+            type: 'INIT_SHEET',
+            sheetId,
+            sheetIndex: sheetNum,
+            sheetName,
+          });
+
+          const totalChunks = Math.ceil(totalRows / EXPORT_ROW_CHUNK_SIZE) || 1;
+
+          for (let cIdx = 0; cIdx < totalChunks; cIdx++) {
+            const start = cIdx * EXPORT_ROW_CHUNK_SIZE;
+            const end = Math.min(start + EXPORT_ROW_CHUNK_SIZE, totalRows);
+
+            // Materialize slice for this chunk only
+            const chunkRows: Record<number, Record<number, any>> = {};
+            for (let r = start; r < end; r++) {
+              const rowIndex = rowKeys[r];
+              if (cellDataRaw[rowIndex]) {
+                chunkRows[rowIndex] = cellDataRaw[rowIndex];
+              }
+            }
+
+            processedGlobalRows += Object.keys(chunkRows).length;
+            const globalPercent = Math.min(85, Math.round(5 + (processedGlobalRows / globalTotalRows) * 80));
+
+            onProgress?.(
+              globalPercent,
+              `Memproses sheet "${sheetName}" (${cIdx + 1}/${totalChunks})...`
+            );
+
+            // Backpressure wait
+            await sendWithAck({
+              type: 'APPEND_CHUNK',
+              sheetId,
+              sheetIndex: sheetNum,
+              chunkIndex: cIdx + 1,
+              totalChunks,
+              chunkRows,
+            });
+
+            await new Promise((r) => setTimeout(r, 0));
+          }
+
+          console.log(`[EXPORT] sheet complete: ${sheetName}`);
+          await sendWithAck({
+            type: 'END_SHEET',
+            sheetId,
+            sheetIndex: sheetNum,
+          });
+        }
+
+        console.log('[EXPORT] Finalizing XLSX package...');
+        onProgress?.(90, 'Mengemas file Excel...');
+        logMemory('BEFORE_FINALIZE');
+
+        worker!.postMessage({
+          type: 'FINALIZE_WORKBOOK',
+        });
+      } catch (streamErr: any) {
+        console.error('[EXPORT] Streaming error:', streamErr);
+        if (worker) worker.terminate();
+        reject(streamErr);
+      }
+    })();
   });
 }
 

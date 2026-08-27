@@ -25,22 +25,72 @@ export default function ExportModal({ univerAPI, onClose, activeFileName, active
     setFilenameInput(`${baseName}.${newFormat}`);
   };
 
-  const getExportBlob = async (onProgress: (percent: number, msg: string) => void): Promise<{ blob: Blob; targetName: string }> => {
-    let blob: Blob;
-    let targetName = filenameInput.trim();
+  // const getExportBlob = async (onProgress: (percent: number, msg: string) => void): Promise<{ blob: Blob; targetName: string }> => {
+  //   let blob: Blob;
+  //   let targetName = filenameInput.trim();
     
-    if (!targetName.endsWith(`.${format}`)) {
-      targetName += `.${format}`;
-    }
+  //   if (!targetName.endsWith(`.${format}`)) {
+  //     targetName += `.${format}`;
+  //   }
+    
+  //   console.log(targetName,"LUAAR TARGET");
+  //   console.log(format,"FORMAAT");
+    
+  //   if (format === 'xlsx') {
+  //     blob = await exportWorkbookToExcel(univerAPI, onProgress);
+  //     console.log(blob,"DALEMM");
+  //   } else {
+  //     blob = await exportActiveSheetToCSV(univerAPI, onProgress);
+  //     console.log(blob,"DALEMM2");
+  //   }
 
-    if (format === 'xlsx') {
-      blob = await exportWorkbookToExcel(univerAPI, onProgress);
-    } else {
-      blob = await exportActiveSheetToCSV(univerAPI, onProgress);
-    }
+  //   return { blob, targetName };
+  // };
 
-    return { blob, targetName };
-  };
+const getExportBlob = async (
+  onProgress: (percent: number, msg: string) => void
+): Promise<{ blob: Blob; targetName: string }> => {
+  let blob: Blob;
+  let targetName = filenameInput.trim();
+
+  if (!targetName.endsWith(`.${format}`)) {
+    targetName += `.${format}`;
+  }
+
+  console.log('[EXPORT MODAL] Target name:', targetName);
+  console.log('[EXPORT MODAL] Format:', format);
+  console.log('[EXPORT MODAL] univerAPI exists:', !!univerAPI);
+
+  if (format === 'xlsx') {
+    console.log('[EXPORT MODAL] BEFORE exportWorkbookToExcel');
+
+    blob = await exportWorkbookToExcel(univerAPI, (percent, msg) => {
+      console.log('[EXPORT MODAL] Progress:', percent, msg);
+      onProgress(percent, msg);
+    });
+
+    console.log('[EXPORT MODAL] AFTER exportWorkbookToExcel');
+    console.log('[EXPORT MODAL] Blob:', blob);
+    console.log('[EXPORT MODAL] Blob size:', blob?.size);
+    console.log('[EXPORT MODAL] Blob type:', blob?.type);
+  } else {
+    console.log('[EXPORT MODAL] BEFORE exportActiveSheetToCSV');
+
+    blob = await exportActiveSheetToCSV(univerAPI, (percent, msg) => {
+      console.log('[EXPORT MODAL] Progress:', percent, msg);
+      onProgress(percent, msg);
+    });
+
+    console.log('[EXPORT MODAL] AFTER exportActiveSheetToCSV');
+    console.log('[EXPORT MODAL] Blob:', blob);
+    console.log('[EXPORT MODAL] Blob size:', blob?.size);
+    console.log('[EXPORT MODAL] Blob type:', blob?.type);
+  }
+
+  console.log('[EXPORT MODAL] Returning blob');
+
+  return { blob, targetName };
+};
 
   const handleDownload = async () => {
     if (!univerAPI) return;
@@ -55,12 +105,15 @@ export default function ExportModal({ univerAPI, onClose, activeFileName, active
         setProgressPercent(percent);
         setProgressMessage(msg);
       });
+console.log(blob,"BLOBB");
 
       setProgressPercent(98);
       setProgressMessage('Mengunduh file...');
 
       // Trigger download
       const url = URL.createObjectURL(blob);
+      console.log(url,"URRLLL");
+      
       const a = document.createElement('a');
       a.href = url;
       a.download = targetName;
@@ -73,6 +126,8 @@ export default function ExportModal({ univerAPI, onClose, activeFileName, active
       setProgressMessage('Pengunduhan selesai!');
       setTimeout(onClose, 800);
     } catch (e: any) {
+      console.log(e,"EEEEE");
+      
       setError(e.message || 'Export failed.');
       setLoading(false);
     }
@@ -91,6 +146,7 @@ export default function ExportModal({ univerAPI, onClose, activeFileName, active
         setProgressPercent(percent);
         setProgressMessage(msg);
       });
+console.log(blob,"BLOBD");
 
       setProgressPercent(92);
       setProgressMessage('Mengirim dan menyimpan file ke Desktop...');

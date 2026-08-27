@@ -1,5 +1,6 @@
 import type { IWorkbookData } from '@univerjs/core';
 import { CalculationMode } from '@univerjs/sheets-formula';
+import { workbookSession } from '@/lib/session/workbookSession';
 
 /**
  * Worker-based non-blocking async Excel importer.
@@ -14,6 +15,10 @@ export async function importExcelToWorkbookDataAsync(
   if (typeof window !== 'undefined' && window.Worker) {
     try {
       const arrayBuffer = await file.arrayBuffer();
+
+      // Retain a copy for copy-through transit export
+      const sessionCopy = new Uint8Array(arrayBuffer.slice(0));
+      workbookSession.setOriginalBuffer(sessionCopy, file.name);
 
       return await new Promise<{ workbookData: Partial<IWorkbookData> }>((resolve, reject) => {
         const worker = new Worker(new URL('../workers/excel.worker.ts', import.meta.url));

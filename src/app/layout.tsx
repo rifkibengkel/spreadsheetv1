@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rebox Digital Sheet",
+  title: "Redbox Digital Sheet",
   icons: {
     icon: "/logo.webp",
   },
-  description: "Rebox Digital Sheet",
+  description: "Redbox Digital Sheet",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets';
 import { UniverSheetsCorePreset } from '@univerjs/preset-sheets-core';
 import UniverPresetSheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
+import { SheetInterceptorService, INTERCEPTOR_POINT } from '@univerjs/sheets';
+import { InterceptorEffectEnum } from '@univerjs/core';
 import '@univerjs/presets/lib/styles/preset-sheets-core.css';
 import '@univerjs/preset-sheets-core/lib/index.css';
 
@@ -33,22 +35,20 @@ export default function Spreadsheet() {
     }
 
     let currentRefObj: any = null;
-    let formulaWorkerInstance: Worker | null = null;
+    const pendingFormulaDisplayMap = new Map<string, { previousValue: any }>();
+    let interceptorDisposable: { dispose: () => void } | null = null;
 
     try {
       if (containerRef.current && containerRef.current.children.length > 0) {
         containerRef.current.innerHTML = '';
       }
 
-      if (typeof window !== 'undefined' && window.Worker) {
-        formulaWorkerInstance = new Worker(new URL('../../lib/workers/formula.worker.ts', import.meta.url), {
-          type: 'module',
-        });
-      }
-
+      // Configure in-process formula computation (Zero IPC / No structured clone transfer of 9.6M cells)
       const corePreset = UniverSheetsCorePreset({
         container: containerRef.current,
-        workerURL: formulaWorkerInstance as any,
+        formula: {
+          initialFormulaComputing: 2, // CalculationMode.NO_CALCULATION on initial load
+        },
       } as any);
 
       const { univer, univerAPI: api } = createUniver({
@@ -59,7 +59,7 @@ export default function Spreadsheet() {
         presets: [corePreset],
       });
 
-      currentRefObj = { univer, univerAPI: api, worker: formulaWorkerInstance };
+      currentRefObj = { univer, univerAPI: api };
       univerRef.current = currentRefObj;
       (window as any).univerAPI = api;
       (window as any).univer = univer;
@@ -74,22 +74,120 @@ export default function Spreadsheet() {
         console.warn('Initial formula computing setup warning:', err);
       }
 
-      // Initialize the workbook snapshot
+      // Initialize the workbook snapshot directly
       api.createUniverSheet(initialWorkbookData);
       setUniverAPI(api);
 
-      // Register mutation listener for copy-through dirty sheet tracking
+      // Register Official SheetInterceptorService for seamless formula visual continuity
+      try {
+        const injector = (univer as any)?.__injector;
+        if (injector) {
+          const sheetInterceptorService = injector.get(SheetInterceptorService);
+          if (sheetInterceptorService && INTERCEPTOR_POINT?.CELL_CONTENT) {
+            interceptorDisposable = sheetInterceptorService.intercept(INTERCEPTOR_POINT.CELL_CONTENT, {
+              priority: 100,
+              effect: InterceptorEffectEnum.Value,
+              handler(cell: any, context: any, next: any) {
+                if (cell && (cell.f || context?.rawData?.f) && (cell.v === null || cell.v === undefined)) {
+                  const key = `${context?.unitId}_${context?.subUnitId}_${context?.row}_${context?.col}`;
+                  if (pendingFormulaDisplayMap.has(key)) {
+                    const fallback = pendingFormulaDisplayMap.get(key);
+                    return next({
+                      ...cell,
+                      v: fallback?.previousValue,
+                    });
+                  }
+                }
+                return next(cell);
+              },
+            });
+          }
+        }
+      } catch (interceptErr) {
+        console.warn('SheetInterceptorService registration warning:', interceptErr);
+      }
+
+      // Register mutation listener for copy-through dirty tracking and formula visual lifecycle
       try {
         if (api.onCommandExecuted) {
-          api.onCommandExecuted((commandInfo: any) => {
-            const subUnitId = commandInfo?.params?.subUnitId || commandInfo?.params?.sheetId;
-            if (subUnitId) {
-              workbookSession.markSheetDirty(subUnitId);
-            } else {
-              const activeSheet = api.getActiveWorkbook?.()?.getActiveSheet?.();
-              if (activeSheet) {
-                const sName = activeSheet.getSheetName?.() || activeSheet.getSheetId?.();
-                if (sName) workbookSession.markSheetDirty(sName);
+          api.onCommandExecuted((commandInfo: any, options: any) => {
+            const commandId = commandInfo?.id;
+            const params = commandInfo?.params;
+            const subUnitId = params?.subUnitId || params?.sheetId;
+            const unitId = params?.unitId || api.getActiveWorkbook?.()?.getId?.() || '';
+
+            // Dirty sheet tracking for export: ONLY on actual cell mutations / structural changes
+            if (
+              (commandId === 'sheet.mutation.set-range-values' ||
+                commandId === 'sheet.mutation.remove-rows' ||
+                commandId === 'sheet.mutation.insert-row' ||
+                commandId === 'sheet.mutation.remove-col' ||
+                commandId === 'sheet.mutation.insert-col') &&
+              !options?.fromFormula &&
+              !options?.applyFormulaCalculationResult
+            ) {
+              if (subUnitId) {
+                workbookSession.markSheetDirty(subUnitId);
+              } else {
+                const activeSheet = api.getActiveWorkbook?.()?.getActiveSheet?.();
+                if (activeSheet) {
+                  const sName = activeSheet.getSheetName?.() || activeSheet.getSheetId?.();
+                  if (sName) workbookSession.markSheetDirty(sName);
+                }
+              }
+            }
+
+            // Capture previous value before formula invalidation
+            if (
+              commandId === 'sheet.mutation.set-range-values' &&
+              !options?.fromFormula &&
+              !options?.applyFormulaCalculationResult
+            ) {
+              const cellValue = params?.cellValue;
+              if (cellValue && typeof cellValue === 'object') {
+                const workbook = api.getActiveWorkbook?.();
+                const worksheet = subUnitId ? workbook?.getSheetBySheetId?.(subUnitId) : workbook?.getActiveSheet?.();
+                const matrix = (worksheet as any)?.getSheet?.()?.getCellMatrix?.() || (worksheet as any)?.getCellMatrix?.();
+
+                for (const rStr of Object.keys(cellValue)) {
+                  const r = parseInt(rStr, 10);
+                  const rowObj = cellValue[r];
+                  if (rowObj && typeof rowObj === 'object') {
+                    for (const cStr of Object.keys(rowObj)) {
+                      const c = parseInt(cStr, 10);
+                      const cellItem = rowObj[c];
+                      if (cellItem?.f && typeof cellItem.f === 'string' && cellItem.f.startsWith('=')) {
+                        const existingCell = matrix?.getValue?.(r, c) || (worksheet as any)?.getCellRaw?.(r, c);
+                        const prevVal = existingCell?.v;
+                        if (prevVal !== undefined && prevVal !== null) {
+                          const key = `${unitId}_${subUnitId || worksheet?.getSheetId?.()}_${r}_${c}`;
+                          pendingFormulaDisplayMap.set(key, { previousValue: prevVal });
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            // Clear pending visual entry when authoritative calculation result arrives
+            if (
+              commandId === 'sheet.mutation.set-range-values' &&
+              (options?.applyFormulaCalculationResult || options?.fromFormula)
+            ) {
+              const cellValue = params?.cellValue;
+              if (cellValue && typeof cellValue === 'object') {
+                for (const rStr of Object.keys(cellValue)) {
+                  const r = parseInt(rStr, 10);
+                  const rowObj = cellValue[r];
+                  if (rowObj && typeof rowObj === 'object') {
+                    for (const cStr of Object.keys(rowObj)) {
+                      const c = parseInt(cStr, 10);
+                      const key = `${unitId}_${subUnitId}_${r}_${c}`;
+                      pendingFormulaDisplayMap.delete(key);
+                    }
+                  }
+                }
               }
             }
           });
@@ -109,13 +207,17 @@ export default function Spreadsheet() {
 
     return () => {
       const activeObj = currentRefObj;
+      pendingFormulaDisplayMap.clear();
+
+      if (interceptorDisposable?.dispose) {
+        try {
+          interceptorDisposable.dispose();
+        } catch {}
+      }
 
       setTimeout(() => {
         if (univerRef.current !== activeObj && activeObj?.univer) {
           try {
-            if (activeObj.worker) {
-              activeObj.worker.terminate();
-            }
             activeObj.univer.dispose();
           } catch (e) {
             console.warn('Dispose warning:', e);
@@ -129,8 +231,6 @@ export default function Spreadsheet() {
     <div className="univer-wrapper">
       <div className="univer-header">
         <p>Edit, Import, & Save Excel / CSV Files directly | Glory-Glory Masferr.AI</p>
-
-        {/* <p>Edit, Import, & Save Excel / CSV Files directly to Desktop</p> */}
       </div>
       <SpreadsheetToolbar
         univerAPI={univerAPI}
@@ -144,4 +244,3 @@ export default function Spreadsheet() {
     </div>
   );
 }
-

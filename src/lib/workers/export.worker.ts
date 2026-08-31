@@ -294,12 +294,12 @@ class CopyThroughZipWriter {
 let exportMode: 'COPY_THROUGH' | 'GREENFIELD' = 'GREENFIELD';
 let originalZipReader: FastZipReader | null = null;
 let dirtySheetIndexSet = new Set<number>();
-let dirtySheetXmlMap = new Map<string, string>();
+let dirtySheetXmlMap = new Map<string, Uint8Array>();
 
 let copyThroughWriter: CopyThroughZipWriter | null = null;
 let sheetsMetadata: Array<{ id: string; index: number; name: string }> = [];
 let availableSheetNames: string[] = [];
-let currentSheetXmlParts: string[] = [];
+let currentSheetChunks: Uint8Array[] = [];
 let sharedFormulaMap = new Map<string, string>();
 
 function sanitizeSheetNames(formula: string): string {
@@ -341,7 +341,7 @@ self.onmessage = async (e: MessageEvent) => {
       exportMode = mode === 'COPY_THROUGH' && originalBuffer ? 'COPY_THROUGH' : 'GREENFIELD';
       availableSheetNames = names || [];
       sheetsMetadata = meta || [];
-      currentSheetXmlParts = [];
+      currentSheetChunks = [];
       sharedFormulaMap.clear();
       dirtySheetXmlMap.clear();
       dirtySheetIndexSet = new Set(dirtySheetIndices || []);
@@ -409,12 +409,14 @@ self.onmessage = async (e: MessageEvent) => {
 
     if (type === 'INIT_SHEET') {
       console.log(`[WORKER] Received INIT_SHEET: ${sheetName} (sheet index: ${sheetIndex})`);
-      currentSheetXmlParts = [];
+      currentSheetChunks = [];
       sharedFormulaMap.clear();
 
-      currentSheetXmlParts.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n');
-      currentSheetXmlParts.push('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n');
-      currentSheetXmlParts.push('  <sheetData>\n');
+      currentSheetChunks.push(
+        textEncoder.encode(
+          '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n  <sheetData>\n'
+        )
+      );
 
       self.postMessage({ type: 'ACK' });
       return;
@@ -439,6 +441,8 @@ self.onmessage = async (e: MessageEvent) => {
         }
       }
 
+      let chunkXml = '';
+
       // Convert cells directly to OpenXML tags
       for (let rIdx = 0; rIdx < rowKeys.length; rIdx++) {
         const rowIndex = rowKeys[rIdx];
@@ -449,7 +453,7 @@ self.onmessage = async (e: MessageEvent) => {
         const colKeys = Object.keys(cols).map(Number).sort((a, b) => a - b);
         if (colKeys.length === 0) continue;
 
-        currentSheetXmlParts.push(`    <row r="${rowNumber}">`);
+        chunkXml += `    <row r="${rowNumber}">`;
 
         for (let cIdx = 0; cIdx < colKeys.length; cIdx++) {
           const colIndex = colKeys[cIdx];
@@ -477,30 +481,47 @@ self.onmessage = async (e: MessageEvent) => {
                 ? cellPay.p.body.dataStream.replace(/[\r\n]+$/, '')
                 : undefined;
 
-            currentSheetXmlParts.push(
-              `<c r="${cellRef}"><f>${escapeXml(parsedFormula)}</f>${
-                formulaRes !== undefined ? `<v>${escapeXml(formulaRes)}</v>` : ''
-              }</c>`
-            );
-          } else if (cellPay.v !== undefined && cellPay.v !== null) {
-            if (typeof cellPay.v === 'number') {
-              currentSheetXmlParts.push(`<c r="${cellRef}"><v>${cellPay.v}</v></c>`);
-            } else if (typeof cellPay.v === 'boolean') {
-              currentSheetXmlParts.push(`<c r="${cellRef}" t="b"><v>${cellPay.v ? 1 : 0}</v></c>`);
+            const isArrayFormula = cellPay.fType === 'array' || cellPay.shareType === 'array';
+            const refAttr = isArrayFormula ? (cellPay.ref ? ` t="array" ref="${escapeXml(cellPay.ref)}"` : ` t="array" ref="${cellRef}"`) : '';
+
+            if (formulaRes !== undefined) {
+              if (cellPay.t === 2 || typeof formulaRes === 'number') {
+                chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${formulaRes}</v></c>`;
+              } else if (cellPay.t === 3 || typeof formulaRes === 'boolean') {
+                chunkXml += `<c r="${cellRef}" t="b"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${formulaRes ? 1 : 0}</v></c>`;
+              } else if (typeof formulaRes === 'string' && formulaRes.startsWith('#')) {
+                chunkXml += `<c r="${cellRef}" t="e"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${escapeXml(formulaRes)}</v></c>`;
+              } else {
+                chunkXml += `<c r="${cellRef}" t="str"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${escapeXml(String(formulaRes))}</v></c>`;
+              }
             } else {
-              currentSheetXmlParts.push(
-                `<c r="${cellRef}" t="inlineStr"><is><t>${escapeXml(cellPay.v)}</t></is></c>`
-              );
+              chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeXml(parsedFormula)}</f></c>`;
+            }
+          } else if (cellPay.v !== undefined && cellPay.v !== null) {
+            if (cellPay.t === 2 || typeof cellPay.v === 'number') {
+              chunkXml += `<c r="${cellRef}"><v>${cellPay.v}</v></c>`;
+            } else if (cellPay.t === 3 || typeof cellPay.v === 'boolean') {
+              chunkXml += `<c r="${cellRef}" t="b"><v>${cellPay.v ? 1 : 0}</v></c>`;
+            } else {
+              chunkXml += `<c r="${cellRef}" t="inlineStr"><is><t>${escapeXml(cellPay.v)}</t></is></c>`;
             }
           } else if (cellPay.p && cellPay.p.body && typeof cellPay.p.body.dataStream === 'string') {
             const textVal = cellPay.p.body.dataStream.replace(/[\r\n]+$/, '');
-            currentSheetXmlParts.push(
-              `<c r="${cellRef}" t="inlineStr"><is><t>${escapeXml(textVal)}</t></is></c>`
-            );
+            if (cellPay.t === 2) {
+              chunkXml += `<c r="${cellRef}"><v>${escapeXml(textVal)}</v></c>`;
+            } else if (cellPay.t === 3) {
+              chunkXml += `<c r="${cellRef}" t="b"><v>${textVal === 'true' || textVal === '1' ? 1 : 0}</v></c>`;
+            } else {
+              chunkXml += `<c r="${cellRef}" t="inlineStr"><is><t>${escapeXml(textVal)}</t></is></c>`;
+            }
           }
         }
 
-        currentSheetXmlParts.push('</row>\n');
+        chunkXml += '</row>\n';
+      }
+
+      if (chunkXml.length > 0) {
+        currentSheetChunks.push(textEncoder.encode(chunkXml));
       }
 
       self.postMessage({ type: 'CHUNK_ACK', sheetId, chunkIndex });
@@ -509,17 +530,25 @@ self.onmessage = async (e: MessageEvent) => {
 
     if (type === 'END_SHEET') {
       console.log(`[WORKER] sheet XML finalized for sheet index ${sheetIndex}`);
-      currentSheetXmlParts.push('  </sheetData>\n</worksheet>');
-      const fullSheetXml = currentSheetXmlParts.join('');
+      currentSheetChunks.push(textEncoder.encode('  </sheetData>\n</worksheet>'));
 
-      if (exportMode === 'COPY_THROUGH') {
-        dirtySheetXmlMap.set(`xl/worksheets/sheet${sheetIndex}.xml`, fullSheetXml);
-      } else if (copyThroughWriter) {
-        copyThroughWriter.addNewEntry(`xl/worksheets/sheet${sheetIndex}.xml`, fullSheetXml, 1);
+      const totalLength = currentSheetChunks.reduce((sum, b) => sum + b.length, 0);
+      const fullSheetBuf = new Uint8Array(totalLength);
+      let offset = 0;
+      for (let i = 0; i < currentSheetChunks.length; i++) {
+        const b = currentSheetChunks[i];
+        fullSheetBuf.set(b, offset);
+        offset += b.length;
       }
 
-      currentSheetXmlParts = [];
+      currentSheetChunks = [];
       sharedFormulaMap.clear();
+
+      if (exportMode === 'COPY_THROUGH') {
+        dirtySheetXmlMap.set(`xl/worksheets/sheet${sheetIndex}.xml`, fullSheetBuf);
+      } else if (copyThroughWriter) {
+        copyThroughWriter.addNewEntry(`xl/worksheets/sheet${sheetIndex}.xml`, fullSheetBuf, 1);
+      }
 
       self.postMessage({ type: 'SHEET_ACK', sheetId });
       return;
@@ -530,13 +559,37 @@ self.onmessage = async (e: MessageEvent) => {
       if (!copyThroughWriter) throw new Error('ZIP generator is uninitialized.');
 
       if (exportMode === 'COPY_THROUGH' && originalZipReader) {
+        const hasDirtySheets = dirtySheetXmlMap.size > 0;
+
         // Stream all untouched entries directly in raw compressed form!
         for (const [filename, entry] of originalZipReader.entries) {
+          if (hasDirtySheets && filename === 'xl/calcChain.xml') {
+            // Discard stale calcChain when workbook has modified sheets!
+            console.log(`[WORKER] Discarding stale ${filename} because workbook has modified sheets.`);
+            continue;
+          }
+
           if (dirtySheetXmlMap.has(filename)) {
-            // Replace with newly modified sheet XML
-            const modifiedXml = dirtySheetXmlMap.get(filename)!;
-            copyThroughWriter.addNewEntry(filename, modifiedXml, 1);
+            // Replace with newly modified sheet XML buffer
+            const modifiedXmlBuf = dirtySheetXmlMap.get(filename)!;
+            copyThroughWriter.addNewEntry(filename, modifiedXmlBuf, 1);
             console.log(`[WORKER] Replaced modified sheet in stream: ${filename}`);
+          } else if (hasDirtySheets && filename === 'xl/_rels/workbook.xml.rels') {
+            // Clean calcChain relationship from workbook.xml.rels
+            const rawCompressedData = originalZipReader.getRawCompressedData(entry);
+            const uncompressed = inflateSync(rawCompressedData);
+            const relsXml = textDecoder.decode(uncompressed);
+            const cleanedRelsXml = relsXml.replace(/<Relationship [^>]*Target="calcChain\.xml"[^>]*\/>/g, '');
+            copyThroughWriter.addNewEntry(filename, cleanedRelsXml, 1);
+            console.log(`[WORKER] Cleaned calcChain relationship from ${filename}`);
+          } else if (hasDirtySheets && filename === '[Content_Types].xml') {
+            // Clean calcChain override from [Content_Types].xml
+            const rawCompressedData = originalZipReader.getRawCompressedData(entry);
+            const uncompressed = inflateSync(rawCompressedData);
+            const ctXml = textDecoder.decode(uncompressed);
+            const cleanedCtXml = ctXml.replace(/<Override [^>]*PartName="\/xl\/calcChain\.xml"[^>]*\/>/g, '');
+            copyThroughWriter.addNewEntry(filename, cleanedCtXml, 1);
+            console.log(`[WORKER] Cleaned calcChain override from ${filename}`);
           } else {
             // Direct zero-copy from original binary slice!
             const rawCompressedData = originalZipReader.getRawCompressedData(entry);

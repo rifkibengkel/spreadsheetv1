@@ -221,10 +221,31 @@ export async function exportWorkbookToExcel(
 
             // Materialize slice for this chunk only
             const chunkRows: Record<number, Record<number, any>> = {};
+            const worksheet = activeWorkbook.getSheetBySheetId
+              ? activeWorkbook.getSheetBySheetId(sheetId)
+              : null;
+            const matrix = worksheet?.getCellMatrix
+              ? worksheet.getCellMatrix()
+              : (worksheet as any)?.getSheet?.()?.getCellMatrix?.();
+
             for (let r = start; r < end; r++) {
               const rowIndex = rowKeys[r];
               if (cellDataRaw[rowIndex]) {
-                chunkRows[rowIndex] = cellDataRaw[rowIndex];
+                const rowObj: Record<number, any> = { ...cellDataRaw[rowIndex] };
+                if (matrix) {
+                  const colKeys = Object.keys(rowObj);
+                  for (let cIdx = 0; cIdx < colKeys.length; cIdx++) {
+                    const colIndex = parseInt(colKeys[cIdx], 10);
+                    const cell = rowObj[colIndex];
+                    if (cell && (cell.f || cell.si !== undefined)) {
+                      const liveCell = matrix.getValue(rowIndex, colIndex);
+                      if (liveCell && liveCell.v !== undefined && liveCell.v !== null) {
+                        rowObj[colIndex] = { ...cell, v: liveCell.v, t: liveCell.t };
+                      }
+                    }
+                  }
+                }
+                chunkRows[rowIndex] = rowObj;
               }
             }
 

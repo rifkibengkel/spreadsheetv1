@@ -135,7 +135,7 @@ export async function exportWorkbookToExcel(
       } else if (type === 'COMPLETE') {
         console.log('[EXPORT] COMPLETE message received from Worker');
         logMemory('COMPLETE');
-        onProgress?.(100, 'File Excel (.xlsx) selesai dibuat!');
+        onProgress?.(90, 'File Excel siap diunduh...');
         const blob = new Blob([buffer], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         });
@@ -211,6 +211,7 @@ export async function exportWorkbookToExcel(
             sheetId,
             sheetIndex: sheetNum,
             sheetName,
+            columnData: sData?.columnData || {},
           });
 
           const totalChunks = Math.ceil(totalRows / EXPORT_ROW_CHUNK_SIZE) || 1;
@@ -279,7 +280,7 @@ export async function exportWorkbookToExcel(
         }
 
         console.log('[EXPORT] Finalizing XLSX package...');
-        onProgress?.(90, 'Mengemas file Excel...');
+        onProgress?.(88, 'Mengemas file Excel...');
         logMemory('BEFORE_FINALIZE');
 
         worker!.postMessage({

@@ -23,6 +23,19 @@ function escapeXml(str: any): string {
     .replace(/'/g, '&apos;');
 }
 
+function escapeFormulaXml(str: any): string {
+  if (str === undefined || str === null) return '';
+  const s = String(str);
+  // In OpenXML formula text (<f>), single quotes (') and double quotes (") MUST NOT be escaped.
+  // Single quotes are Excel syntax for sheet references (e.g. 'Sheet Name'!A1)
+  // Double quotes are Excel syntax for string literals (e.g. "valid")
+  // Only &, <, and > are XML special characters in element content.
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 const CRC32_TABLE = new Int32Array(256);
 for (let i = 0; i < 256; i++) {
   let c = i;
@@ -294,13 +307,14 @@ class CopyThroughZipWriter {
 let exportMode: 'COPY_THROUGH' | 'GREENFIELD' = 'GREENFIELD';
 let originalZipReader: FastZipReader | null = null;
 let dirtySheetIndexSet = new Set<number>();
-let dirtySheetXmlMap = new Map<string, Uint8Array>();
+const dirtySheetXmlMap = new Map<string, Uint8Array>();
 
 let copyThroughWriter: CopyThroughZipWriter | null = null;
 let sheetsMetadata: Array<{ id: string; index: number; name: string }> = [];
 let availableSheetNames: string[] = [];
 let currentSheetChunks: Uint8Array[] = [];
-let sharedFormulaMap = new Map<string, string>();
+let currentSheetTail = '';
+const sharedFormulaMap = new Map<string, string>();
 
 function sanitizeSheetNames(formula: string): string {
   if (!formula) return formula;
@@ -328,8 +342,9 @@ self.onmessage = async (e: MessageEvent) => {
     sheetId,
     sheetIndex,
     sheetName,
+    columnData,
     chunkIndex,
-    totalChunks,
+    totalChunks: _totalChunks,
     chunkRows,
     snapshot,
     activeSheetId,
@@ -376,6 +391,7 @@ self.onmessage = async (e: MessageEvent) => {
 
         let workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <calcPr fullCalcOnLoad="1" forceFullCalc="1"/>
   <sheets>`;
         sheetsMetadata.forEach((s) => {
           workbookXml += `\n    <sheet name="${escapeXml(s.name)}" sheetId="${s.index}" r:id="rId${s.index}"/>`;
@@ -411,13 +427,61 @@ self.onmessage = async (e: MessageEvent) => {
       console.log(`[WORKER] Received INIT_SHEET: ${sheetName} (sheet index: ${sheetIndex})`);
       currentSheetChunks = [];
       sharedFormulaMap.clear();
+      currentSheetTail = '';
 
-      currentSheetChunks.push(
-        textEncoder.encode(
-          '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n  <sheetData>\n'
-        )
-      );
+      let colsXml = '';
+      if (columnData && typeof columnData === 'object') {
+        const colIndices = Object.keys(columnData).map(Number).sort((a, b) => a - b);
+        if (colIndices.length > 0) {
+          colsXml = '  <cols>\n';
+          for (let i = 0; i < colIndices.length; i++) {
+            const cIdx = colIndices[i];
+            const col = columnData[cIdx];
+            if (col) {
+              const colNum = cIdx + 1;
+              const w = col.w !== undefined ? col.w : 10;
+              const hd = col.hd === 1 ? ' hidden="1"' : '';
+              const customW = col.w !== undefined ? ' customWidth="1"' : '';
+              colsXml += `    <col min="${colNum}" max="${colNum}" width="${w}"${hd}${customW}/>\n`;
+            }
+          }
+          colsXml += '  </cols>\n';
+        }
+      }
 
+      let headerXml = '';
+      if (exportMode === 'COPY_THROUGH' && originalZipReader) {
+        const origEntry = originalZipReader.entries.get(`xl/worksheets/sheet${sheetIndex}.xml`);
+        if (origEntry) {
+          const raw = originalZipReader.getRawCompressedData(origEntry);
+          const uncompressed = inflateSync(raw);
+          const origXml = textDecoder.decode(uncompressed);
+          const sheetDataStart = origXml.indexOf('<sheetData');
+          const sheetDataEnd = origXml.indexOf('</sheetData>');
+          if (sheetDataStart !== -1 && sheetDataEnd !== -1) {
+            let origHead = origXml.substring(0, sheetDataStart);
+            currentSheetTail = origXml.substring(sheetDataEnd + '</sheetData>'.length);
+
+            if (colsXml) {
+              if (origHead.includes('<cols>')) {
+                origHead = origHead.replace(/<cols>[\s\S]*?<\/cols>/, colsXml.trim());
+              } else if (origHead.includes('</sheetViews>')) {
+                const svEnd = origHead.indexOf('</sheetViews>') + '</sheetViews>'.length;
+                origHead = origHead.substring(0, svEnd) + '\n' + colsXml + origHead.substring(svEnd);
+              } else {
+                origHead = origHead + colsXml;
+              }
+            }
+            headerXml = origHead + '<sheetData>\n';
+          }
+        }
+      }
+
+      if (!headerXml) {
+        headerXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">\n${colsXml}  <sheetData>\n`;
+      }
+
+      currentSheetChunks.push(textEncoder.encode(headerXml));
       self.postMessage({ type: 'ACK' });
       return;
     }
@@ -474,7 +538,7 @@ self.onmessage = async (e: MessageEvent) => {
               parsedFormula = parsedFormula.substring(1, parsedFormula.length - 1);
             }
 
-            let formulaRes =
+            const formulaRes =
               cellPay.v !== undefined && cellPay.v !== null
                 ? cellPay.v
                 : cellPay.p?.body?.dataStream
@@ -486,16 +550,16 @@ self.onmessage = async (e: MessageEvent) => {
 
             if (formulaRes !== undefined) {
               if (cellPay.t === 2 || typeof formulaRes === 'number') {
-                chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${formulaRes}</v></c>`;
+                chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${formulaRes}</v></c>`;
               } else if (cellPay.t === 3 || typeof formulaRes === 'boolean') {
-                chunkXml += `<c r="${cellRef}" t="b"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${formulaRes ? 1 : 0}</v></c>`;
+                chunkXml += `<c r="${cellRef}" t="b"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${formulaRes ? 1 : 0}</v></c>`;
               } else if (typeof formulaRes === 'string' && formulaRes.startsWith('#')) {
-                chunkXml += `<c r="${cellRef}" t="e"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${escapeXml(formulaRes)}</v></c>`;
+                chunkXml += `<c r="${cellRef}" t="e"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${escapeXml(formulaRes)}</v></c>`;
               } else {
-                chunkXml += `<c r="${cellRef}" t="str"><f${refAttr}>${escapeXml(parsedFormula)}</f><v>${escapeXml(String(formulaRes))}</v></c>`;
+                chunkXml += `<c r="${cellRef}" t="str"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${escapeXml(String(formulaRes))}</v></c>`;
               }
             } else {
-              chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeXml(parsedFormula)}</f></c>`;
+              chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f></c>`;
             }
           } else if (cellPay.v !== undefined && cellPay.v !== null) {
             if (cellPay.t === 2 || typeof cellPay.v === 'number') {
@@ -530,7 +594,12 @@ self.onmessage = async (e: MessageEvent) => {
 
     if (type === 'END_SHEET') {
       console.log(`[WORKER] sheet XML finalized for sheet index ${sheetIndex}`);
-      currentSheetChunks.push(textEncoder.encode('  </sheetData>\n</worksheet>'));
+      if (currentSheetTail) {
+        currentSheetChunks.push(textEncoder.encode('  </sheetData>' + currentSheetTail));
+        currentSheetTail = '';
+      } else {
+        currentSheetChunks.push(textEncoder.encode('  </sheetData>\n</worksheet>'));
+      }
 
       const totalLength = currentSheetChunks.reduce((sum, b) => sum + b.length, 0);
       const fullSheetBuf = new Uint8Array(totalLength);
@@ -590,6 +659,21 @@ self.onmessage = async (e: MessageEvent) => {
             const cleanedCtXml = ctXml.replace(/<Override [^>]*PartName="\/xl\/calcChain\.xml"[^>]*\/>/g, '');
             copyThroughWriter.addNewEntry(filename, cleanedCtXml, 1);
             console.log(`[WORKER] Cleaned calcChain override from ${filename}`);
+          } else if (hasDirtySheets && filename === 'xl/workbook.xml') {
+            // When calcChain is discarded, ensure workbook.xml has fullCalcOnLoad="1" forceFullCalc="1"
+            const rawCompressedData = originalZipReader.getRawCompressedData(entry);
+            const uncompressed = inflateSync(rawCompressedData);
+            let wbXml = textDecoder.decode(uncompressed);
+            if (wbXml.includes('<calcPr')) {
+              wbXml = wbXml.replace(/<calcPr\b([^>]*?)\/?>/g, (_match, attrs) => {
+                const cleanAttrs = attrs.replace(/\s*(fullCalcOnLoad|forceFullCalc)="[^"]*"/g, '');
+                return `<calcPr${cleanAttrs} fullCalcOnLoad="1" forceFullCalc="1"/>`;
+              });
+            } else {
+              wbXml = wbXml.replace('</workbook>', '  <calcPr fullCalcOnLoad="1" forceFullCalc="1"/>\n</workbook>');
+            }
+            copyThroughWriter.addNewEntry(filename, wbXml, 1);
+            console.log(`[WORKER] Ensured fullCalcOnLoad and forceFullCalc in ${filename}`);
           } else {
             // Direct zero-copy from original binary slice!
             const rawCompressedData = originalZipReader.getRawCompressedData(entry);

@@ -74,6 +74,32 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
     }
   };
 
+  const handleToggleFilter = async () => {
+    if (!univerAPI) {
+      showToast('Mesin spreadsheet belum siap.', true);
+      return;
+    }
+    try {
+      await univerAPI.executeCommand('sheet.command.smart-toggle-filter');
+    } catch (err: any) {
+      console.warn('Filter toggle error:', err);
+      showToast(err?.message || 'Gagal mengubah status filter.', true);
+    }
+  };
+
+  const handleClearFilter = async () => {
+    if (!univerAPI) {
+      showToast('Mesin spreadsheet belum siap.', true);
+      return;
+    }
+    try {
+      await univerAPI.executeCommand('sheet.command.clear-filter-criteria');
+      showToast('✓ Filter berhasil dibersihkan');
+    } catch (err: any) {
+      console.warn('Clear filter error:', err);
+    }
+  };
+
   return (
     <div style={{ marginBottom: '16px' }}>
       <div
@@ -111,6 +137,17 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38bdf8' }} />
             {activeFileName}
           </span>
+        </div>
+
+        {/* Filter Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.6)', padding: '4px 8px', borderRadius: '8px', border: '1px solid #334155' }}>
+          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', paddingRight: '4px' }}>Filter:</span>
+          <button onClick={handleToggleFilter} style={filterBtnStyle} title="Toggle Filter rentang terpilih (Ctrl+Shift+L)">
+            ⚡ Filter
+          </button>
+          <button onClick={handleClearFilter} style={clearFilterBtnStyle} title="Hapus semua kriteria filter pada sheet aktif">
+            🧹 Clear
+          </button>
         </div>
 
         <button onClick={() => setShowImport(true)} style={importBtnStyle}>
@@ -209,3 +246,35 @@ const exportBtnStyle: React.CSSProperties = {
   boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
   transition: 'all 0.2s ease',
 };
+
+const filterBtnStyle: React.CSSProperties = {
+  padding: '7px 12px',
+  background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+  color: '#ffffff',
+  border: 'none',
+  borderRadius: '6px',
+  cursor: 'pointer',
+  fontWeight: '600',
+  fontSize: '12px',
+  boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  transition: 'all 0.15s ease',
+};
+
+const clearFilterBtnStyle: React.CSSProperties = {
+  padding: '7px 10px',
+  background: 'rgba(71, 85, 105, 0.5)',
+  color: '#cbd5e1',
+  border: '1px solid #475569',
+  borderRadius: '6px',
+  cursor: 'pointer',
+  fontWeight: '500',
+  fontSize: '12px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  transition: 'all 0.15s ease',
+};
+

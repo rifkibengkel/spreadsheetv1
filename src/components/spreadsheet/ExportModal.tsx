@@ -11,7 +11,7 @@ interface ExportModalProps {
 
 export default function ExportModal({ univerAPI, onClose, activeFileName, activeFileFormat = 'xlsx' }: ExportModalProps) {
   const [format, setFormat] = useState<'xlsx' | 'csv'>(activeFileFormat);
-  const [filenameInput, setFilenameInput] = useState(activeFileName || `workbook-${Date.now()}.${activeFileFormat}`);
+  const [filenameInput, setFilenameInput] = useState(() => activeFileName || `workbook-export.${activeFileFormat}`);
   const [loading, setLoading] = useState(false);
   const [progressPercent, setProgressPercent] = useState(0);
   const [progressMessage, setProgressMessage] = useState('');
@@ -98,22 +98,19 @@ const getExportBlob = async (
     setError('');
     setSuccessMessage('');
     setProgressPercent(0);
-    setProgressMessage('Menyiapkan impor/ekspor...');
+    setProgressMessage('Menyiapkan file untuk diekspor...');
 
     try {
       const { blob, targetName } = await getExportBlob((percent, msg) => {
         setProgressPercent(percent);
         setProgressMessage(msg);
       });
-console.log(blob,"BLOBB");
 
-      setProgressPercent(98);
-      setProgressMessage('Mengunduh file...');
+      setProgressPercent(95);
+      setProgressMessage('Mengunduh file ke browser...');
 
       // Trigger download
       const url = URL.createObjectURL(blob);
-      console.log(url,"URRLLL");
-      
       const a = document.createElement('a');
       a.href = url;
       a.download = targetName;
@@ -123,11 +120,9 @@ console.log(blob,"BLOBB");
       URL.revokeObjectURL(url);
 
       setProgressPercent(100);
-      setProgressMessage('Pengunduhan selesai!');
+      setProgressMessage('✓ Pengunduhan selesai!');
       setTimeout(onClose, 800);
     } catch (e: any) {
-      console.log(e,"EEEEE");
-      
       setError(e.message || 'Export failed.');
       setLoading(false);
     }
@@ -146,10 +141,9 @@ console.log(blob,"BLOBB");
         setProgressPercent(percent);
         setProgressMessage(msg);
       });
-console.log(blob,"BLOBD");
 
       setProgressPercent(92);
-      setProgressMessage('Mengirim dan menyimpan file ke Desktop...');
+      setProgressMessage('Mengirim file ke Desktop...');
 
       const formData = new FormData();
       formData.append('file', blob, targetName);
@@ -166,7 +160,7 @@ console.log(blob,"BLOBD");
       }
 
       setProgressPercent(100);
-      setProgressMessage('Berhasil disimpan ke Desktop!');
+      setProgressMessage('✓ Berhasil disimpan ke Desktop!');
       setSuccessMessage(`Berhasil disimpan ke Desktop: ${data.filePath || targetName}`);
       setLoading(false);
       setTimeout(onClose, 1500);
@@ -177,7 +171,7 @@ console.log(blob,"BLOBD");
   };
 
   return (
-    <div style={overlayStyle}>
+    <div id="export-modal-overlay" style={overlayStyle}>
       <div style={modalStyle}>
         <h2 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>Ekspor & Simpan Data</h2>
         <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '16px', lineHeight: '1.4' }}>
@@ -211,8 +205,8 @@ console.log(blob,"BLOBD");
         {loading && (
           <div style={{ marginBottom: '16px', background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #334155' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 'bold' }}>Proses Lazy Load Simpan...</span>
-              <span style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 'bold' }}>{progressPercent}%</span>
+              <span style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 'bold' }}>Proses Ekspor / Simpan File...</span>
+              <span id="export-progress-percent" style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 'bold' }}>{progressPercent}%</span>
             </div>
             <div style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
               <div 
@@ -224,7 +218,7 @@ console.log(blob,"BLOBD");
                 }} 
               />
             </div>
-            <p style={{ color: '#cbd5e1', fontSize: '11px', marginTop: '6px', margin: '6px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <p id="export-status-message" style={{ color: '#cbd5e1', fontSize: '11px', marginTop: '6px', margin: '6px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {progressMessage || 'Memproses data...'}
             </p>
           </div>

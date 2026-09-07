@@ -47,6 +47,51 @@ function parseCellRef(ref: string): { row: number; col: number } {
 }
 
 /**
+ * Parse OpenXML <cols> element and populate Univer columnData.
+ * Preserves hidden state (hd: 1), column width (w: px), and range spans (min..max).
+ */
+function parseColsXml(colsXml: string, columnData: Record<number, { w?: number; hd?: number }>): void {
+  const colRegex = /<col\s+([^>]+?)\/?>/g;
+  let match: RegExpExecArray | null;
+  while ((match = colRegex.exec(colsXml)) !== null) {
+    const attrs = match[1];
+    const minMatch = attrs.match(/min="(\d+)"/);
+    const maxMatch = attrs.match(/max="(\d+)"/);
+    if (!minMatch || !maxMatch) continue;
+
+    const min = parseInt(minMatch[1], 10) - 1; // 0-indexed for Univer
+    const max = parseInt(maxMatch[1], 10) - 1; // 0-indexed for Univer
+
+    const widthMatch = attrs.match(/width="([^"]+)"/);
+    const hiddenMatch = attrs.match(/hidden="([^"]+)"/);
+
+    let w: number | undefined = undefined;
+    if (widthMatch) {
+      const rawW = parseFloat(widthMatch[1]);
+      if (!isNaN(rawW) && rawW > 0) {
+        w = Math.round(rawW * 8);
+      }
+    }
+
+    let isHidden = false;
+    if (hiddenMatch) {
+      const hVal = hiddenMatch[1].trim().toLowerCase();
+      if (hVal === '1' || hVal === 'true') {
+        isHidden = true;
+      }
+    }
+
+    if (isHidden || w !== undefined) {
+      for (let c = min; c <= max; c++) {
+        if (!columnData[c]) columnData[c] = {};
+        if (w !== undefined) columnData[c].w = w;
+        if (isHidden) columnData[c].hd = 1;
+      }
+    }
+  }
+}
+
+/**
  * Fallback incremental streaming parser for giant worksheets (>300 MB XML).
  * Avoids monolithic string allocations in V8 heap.
  */
@@ -96,7 +141,7 @@ async function parseStreamingWorkbookFallback(
   // 3. Incremental stream parse for shared strings (xl/sharedStrings.xml)
   self.postMessage({
     type: 'PROGRESS',
-    percent: 30,
+    percent: 20,
     message: 'Membaca tabel shared strings...',
   });
 
@@ -158,17 +203,45 @@ async function parseStreamingWorkbookFallback(
 
     const sheetXmlFile = zip.files[entry.target];
     const cellData: Record<number, Record<number, any>> = {};
+    const columnData: Record<number, { w?: number; hd?: number }> = {};
     let maxRow = 0;
     let maxCol = 0;
 
     if (sheetXmlFile) {
       const decoder = new TextDecoder('utf-8');
       let leftover = '';
+      let colsParsed = false;
+      let headerBuffer = '';
 
       await new Promise<void>((resolve, reject) => {
         const stream = (sheetXmlFile as any).internalStream('uint8array');
         stream.on('data', (chunk: Uint8Array) => {
-          const text = leftover + decoder.decode(chunk, { stream: true });
+          const chunkText = decoder.decode(chunk, { stream: true });
+
+          // Extract and parse <cols> section appearing before <sheetData>
+          if (!colsParsed) {
+            headerBuffer += chunkText;
+            if (headerBuffer.includes('</cols>')) {
+              const colsM = headerBuffer.match(/<cols>([\s\S]*?)<\/cols>/);
+              if (colsM) {
+                parseColsXml(colsM[0], columnData);
+              }
+              colsParsed = true;
+              headerBuffer = '';
+            } else if (headerBuffer.includes('<sheetData')) {
+              const colsM = headerBuffer.match(/<cols>([\s\S]*?)<\/cols>/);
+              if (colsM) {
+                parseColsXml(colsM[0], columnData);
+              }
+              colsParsed = true;
+              headerBuffer = '';
+            } else if (headerBuffer.length > 5 * 1024 * 1024) {
+              colsParsed = true;
+              headerBuffer = '';
+            }
+          }
+
+          const text = leftover + chunkText;
           const rows = text.split('</row>');
           leftover = rows.pop() || '';
 
@@ -261,12 +334,23 @@ async function parseStreamingWorkbookFallback(
         });
 
         stream.on('end', () => {
+          if (!colsParsed && headerBuffer) {
+            const colsM = headerBuffer.match(/<cols>([\s\S]*?)<\/cols>/);
+            if (colsM) {
+              parseColsXml(colsM[0], columnData);
+            }
+            colsParsed = true;
+            headerBuffer = '';
+          }
           resolve();
         });
         stream.on('error', reject);
         stream.resume();
       });
     }
+
+    const maxConfiguredCol = Object.keys(columnData).reduce((max, c) => Math.max(max, parseInt(c, 10)), -1);
+    const effectiveMaxCol = Math.max(maxCol, maxConfiguredCol);
 
     sheetsData[sheetId] = {
       id: sheetId,
@@ -275,7 +359,7 @@ async function parseStreamingWorkbookFallback(
       status: sIdx === 0 ? 1 : 0,
       hidden: 0,
       rowCount: Math.max(maxRow + 50, 100),
-      columnCount: Math.max(maxCol + 10, 30),
+      columnCount: Math.max(effectiveMaxCol + 10, 30),
       zoomRatio: 1,
       scrollTop: 0,
       scrollLeft: 0,
@@ -286,11 +370,11 @@ async function parseStreamingWorkbookFallback(
       rowHeader: { width: 46 },
       columnHeader: { height: 20 },
       cellData,
-      columnData: {},
+      columnData,
       rowData: {},
     };
 
-    const percent = 35 + Math.round(((sIdx + 1) / totalSheets) * 60);
+    const percent = 25 + Math.round(((sIdx + 1) / totalSheets) * 60);
     self.postMessage({
       type: 'PROGRESS',
       percent,
@@ -311,7 +395,7 @@ self.onmessage = async (e: MessageEvent) => {
   const { fileArrayBuffer, fileName } = e.data;
 
   try {
-    self.postMessage({ type: 'PROGRESS', percent: 5, message: 'Membaca file di Background Worker (5%)...' });
+    self.postMessage({ type: 'PROGRESS', percent: 5, message: 'Membaca file di Background Worker...' });
 
     let workbookData: any = null;
 
@@ -339,11 +423,11 @@ self.onmessage = async (e: MessageEvent) => {
     } else {
       try {
         let workbook: ExcelJS.Workbook | null = new ExcelJS.Workbook();
-        self.postMessage({ type: 'PROGRESS', percent: 15, message: 'Mengurai struktur XML Excel di Worker (15%)...' });
+        self.postMessage({ type: 'PROGRESS', percent: 15, message: 'Mengurai struktur XML Excel...' });
 
         await workbook.xlsx.load(fileArrayBuffer);
 
-        self.postMessage({ type: 'PROGRESS', percent: 25, message: 'Menyiapkan metadata dan mengurai semua sheet...' });
+        self.postMessage({ type: 'PROGRESS', percent: 25, message: 'Menyiapkan metadata dan mengurai sheet...' });
 
         const sheetOrder: string[] = [];
         const sheetsData: any = {};
@@ -354,8 +438,27 @@ self.onmessage = async (e: MessageEvent) => {
           sheetOrder.push(sheetId);
 
           const cellData: Record<number, Record<number, any>> = {};
+          const columnData: Record<number, { w?: number; hd?: number }> = {};
           let maxRow = 0;
           let maxCol = 0;
+
+          if (ws.columns && Array.isArray(ws.columns)) {
+            ws.columns.forEach((col) => {
+              if (!col || typeof col.number !== 'number') return;
+              const colIndex = col.number - 1; // 0-indexed for Univer
+              let w: number | undefined = undefined;
+              if (typeof col.width === 'number' && col.width > 0 && (col as any).isCustomWidth !== false) {
+                w = Math.round(col.width * 8);
+              }
+              const isHidden = Boolean(col.hidden);
+
+              if (isHidden || w !== undefined) {
+                if (!columnData[colIndex]) columnData[colIndex] = {};
+                if (w !== undefined) columnData[colIndex].w = w;
+                if (isHidden) columnData[colIndex].hd = 1;
+              }
+            });
+          }
 
           ws.eachRow({ includeEmpty: false }, (row, rowNumber) => {
             const rowIndex = rowNumber - 1;
@@ -468,6 +571,9 @@ self.onmessage = async (e: MessageEvent) => {
             }
           });
 
+          const maxConfiguredCol = Object.keys(columnData).reduce((max, c) => Math.max(max, parseInt(c, 10)), -1);
+          const effectiveMaxCol = Math.max(maxCol, maxConfiguredCol);
+
           sheetsData[sheetId] = {
             id: sheetId,
             name: ws.name,
@@ -475,7 +581,7 @@ self.onmessage = async (e: MessageEvent) => {
             status: sIdx === 0 ? 1 : 0, // Sheet 0 active by default
             hidden: 0,
             rowCount: Math.max(maxRow + 50, 100),
-            columnCount: Math.max(maxCol + 10, 30),
+            columnCount: Math.max(effectiveMaxCol + 10, 30),
             zoomRatio: 1,
             scrollTop: 0,
             scrollLeft: 0,
@@ -486,11 +592,11 @@ self.onmessage = async (e: MessageEvent) => {
             rowHeader: { width: 46 },
             columnHeader: { height: 20 },
             cellData,
-            columnData: {},
+            columnData,
             rowData: {},
           };
 
-          const percent = 25 + Math.round(((sIdx + 1) / totalSheets) * 70);
+          const percent = 25 + Math.round(((sIdx + 1) / totalSheets) * 60);
           self.postMessage({
             type: 'PROGRESS',
             percent,
@@ -513,7 +619,7 @@ self.onmessage = async (e: MessageEvent) => {
       }
     }
 
-    self.postMessage({ type: 'PROGRESS', percent: 98, message: 'Menyinkronkan formula...' });
+    self.postMessage({ type: 'PROGRESS', percent: 88, message: 'Menyinkronkan formula...' });
 
     // Pre-resolve scalar cross-sheet & same-sheet formulas missing 'v'
     const sheetsData = workbookData.sheets;
@@ -527,7 +633,7 @@ self.onmessage = async (e: MessageEvent) => {
             const cIdx = parseInt(cIdxStr, 10);
             const cell = cData[rIdx][cIdx];
             if (cell.f && (cell.v === undefined || cell.v === null || cell.v === '')) {
-              let match = cell.f.match(/^=('([^']+)'|([A-Za-z0-9_\s]+))!([A-Za-z]+)([0-9]+)$/i);
+              const match = cell.f.match(/^=('([^']+)'|([A-Za-z0-9_\s]+))!([A-Za-z]+)([0-9]+)$/i);
               let targetSheetName = match ? (match[2] || match[3]) : null;
               let colStr = match ? match[4].toUpperCase() : null;
               let rowNum = match ? parseInt(match[5], 10) : null;
@@ -566,7 +672,7 @@ self.onmessage = async (e: MessageEvent) => {
       if (!resolvedAny) break;
     }
 
-    self.postMessage({ type: 'PROGRESS', percent: 100, message: 'Impor selesai! (100%)' });
+    self.postMessage({ type: 'PROGRESS', percent: 90, message: 'Data lembar kerja siap disusun...' });
 
     self.postMessage({
       type: 'COMPLETE',

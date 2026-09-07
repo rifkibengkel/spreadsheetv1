@@ -42,33 +42,44 @@ export default function ImportModal({ univerAPI, onClose, onFileImported }: Impo
           if (msg) setStatusMessage(msg);
         });
 
+        setProgress(92);
+        setStatusMessage('Menyusun lembar kerja ke engine spreadsheet...');
+
+        // Yield to browser to paint status message before Univer mounting
+        await new Promise((resolve) => setTimeout(resolve, 80));
+
+        try {
+          replaceUniverWorkbook(univerAPI, payload.workbookData);
+        } catch (e: any) {
+          console.error('Replace workbook error:', e);
+        }
+
         setProgress(100);
-        setStatusMessage('Impor Berhasil! Memuat ke spreadsheet...');
+        setStatusMessage('✓ Spreadsheet siap digunakan!');
         onFileImported?.(file.name, 'xlsx');
 
-        // Close modal immediately so UI does not get stuck at 100%
-        onClose();
-
-        // Defer heavy Univer Sheet creation slightly to allow modal unmount cleanly
+        // Close modal only after Univer is fully mounted and ready
         setTimeout(() => {
-          try {
-            replaceUniverWorkbook(univerAPI, payload.workbookData);
-          } catch (e: any) {
-            console.error('Replace workbook error:', e);
-          }
-        }, 50);
+          onClose();
+        }, 500);
       } else if (ext === 'csv') {
+        setProgress(5);
+        setStatusMessage('Membaca file CSV...');
         importCSVBatched(
           file,
           univerAPI,
           (percent) => {
-            setProgress(percent);
-            setStatusMessage(`Membaca CSV (${percent}%)...`);
+            const scaled = Math.min(88, Math.max(5, Math.round(5 + (percent * 0.83))));
+            setProgress(scaled);
+            setStatusMessage('Mengurai data CSV...');
           },
           () => {
-            setStatusMessage('Impor CSV Berhasil!');
+            setProgress(100);
+            setStatusMessage('✓ Impor CSV Berhasil!');
             onFileImported?.(file.name, 'csv');
-            onClose();
+            setTimeout(() => {
+              onClose();
+            }, 500);
           },
           (err) => {
             setError(err.message || 'CSV Import gagal.');
@@ -87,7 +98,7 @@ export default function ImportModal({ univerAPI, onClose, onFileImported }: Impo
   };
 
   return (
-    <div style={overlayStyle}>
+    <div id="import-modal-overlay" style={overlayStyle}>
       <div style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <h2 style={{ margin: 0, fontSize: '20px', color: '#f8fafc', fontWeight: '700' }}>
@@ -146,8 +157,8 @@ export default function ImportModal({ univerAPI, onClose, onFileImported }: Impo
         {loading && (
           <div style={{ marginTop: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '12px' }}>
-              <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{statusMessage}</span>
-              <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>{progress}%</span>
+              <span id="import-status-message" style={{ color: '#38bdf8', fontWeight: 'bold' }}>{statusMessage}</span>
+              <span id="import-progress-percent" style={{ color: '#38bdf8', fontWeight: 'bold' }}>{progress}%</span>
             </div>
 
             <div style={{ background: '#0f172a', height: '10px', borderRadius: '5px', overflow: 'hidden', border: '1px solid #334155' }}>

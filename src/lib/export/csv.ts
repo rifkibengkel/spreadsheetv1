@@ -106,7 +106,7 @@ export async function exportActiveSheetToCSV(
       } else if (type === 'COMPLETE') {
         console.log('[CSV EXPORT] COMPLETE message received from Worker');
         logMemory('COMPLETE');
-        onProgress?.(100, 'File CSV selesai dibuat!');
+        onProgress?.(90, 'File CSV siap diunduh...');
         const blob = new Blob([buffer], { type: 'text/csv;charset=utf-8;' });
         if (worker) worker.terminate();
         resolve(blob);
@@ -153,7 +153,7 @@ export async function exportActiveSheetToCSV(
             }
           }
 
-          const percent = Math.min(90, Math.round(5 + ((cIdx + 1) / totalChunks) * 85));
+          const percent = Math.min(85, Math.round(5 + ((cIdx + 1) / totalChunks) * 80));
           onProgress?.(
             percent,
             `Mengonversi CSV "${sheetName}" (${cIdx + 1}/${totalChunks})...`
@@ -172,7 +172,7 @@ export async function exportActiveSheetToCSV(
         }
 
         console.log('[CSV EXPORT] All chunks sent, finalizing CSV...');
-        onProgress?.(92, 'Mengemas file CSV...');
+        onProgress?.(88, 'Mengemas file CSV...');
         logMemory('BEFORE_FINALIZE');
 
         worker!.postMessage({ type: 'FINALIZE_CSV' });

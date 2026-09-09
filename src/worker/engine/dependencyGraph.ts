@@ -1,4 +1,4 @@
-import { compileCriteria, vectorSum, vectorSumIfs, vectorCount, vectorCountIfs } from './vectorKernel';
+import { compileCriteria, testPredicate, vectorSum, vectorSumIfs, vectorCount, vectorCountIfs } from './vectorKernel';
 
 // ==============================================================================
 // IN-MEMORY WORKBOOK & DEPENDENCY ENGINE (PHASE 4)
@@ -113,9 +113,29 @@ export class WorkbookEngine {
       return this.evalSumIfs(expr.slice(7, -1), sheetId);
     }
 
+    // 1b. SUMIF pattern: SUMIF(range, criteria, [sum_range])
+    if (upper.startsWith('SUMIF(') && upper.endsWith(')')) {
+      return this.evalSumIf(expr.slice(6, -1), sheetId);
+    }
+
+    // 1c. VLOOKUP pattern: VLOOKUP(lookup_val, table_range, col_idx, [range_lookup])
+    if (upper.startsWith('VLOOKUP(') && upper.endsWith(')')) {
+      return this.evalVlookup(expr.slice(8, -1), sheetId);
+    }
+
+    // 0. SUM(IF(...)) array multi-criteria formula pattern: e.g. SUM(IF('Data Valid'!$O$2:$O$414777=B6,IF('Data Valid'!$Z$2:$Z$414777=0,1,0)))
+    if (upper.startsWith('SUM(IF(')) {
+      return this.evalSumIfArray(expr, sheetId);
+    }
+
     // 2. COUNTIFS pattern: COUNTIFS(criteria_range1, criteria1, ...)
     if (upper.startsWith('COUNTIFS(') && upper.endsWith(')')) {
       return this.evalCountIfs(expr.slice(9, -1), sheetId);
+    }
+
+    // 2b. COUNTIF pattern: COUNTIF(criteria_range, criteria)
+    if (upper.startsWith('COUNTIF(') && upper.endsWith(')')) {
+      return this.evalCountIf(expr.slice(8, -1), sheetId);
     }
 
     // 3. SUM pattern: SUM(range, ...)
@@ -172,6 +192,22 @@ export class WorkbookEngine {
       rangePart = parts[1];
     } else if (defaultSheetId) {
       sheet = this.resolveSheet(defaultSheetId);
+    }
+
+    rangePart = rangePart.replace(/\$/g, '');
+
+    // Whole column range e.g. B:L or A:A
+    const colMatch = rangePart.match(/^([A-Za-z]+):([A-Za-z]+)$/);
+    if (colMatch) {
+      const startCol = this.colLetterToIndex(colMatch[1]);
+      const endCol = this.colLetterToIndex(colMatch[2]);
+      return {
+        sheet,
+        startCol: Math.min(startCol, endCol),
+        startRow: 0,
+        endCol: Math.max(startCol, endCol),
+        endRow: 1000000,
+      };
     }
 
     const match = rangePart.match(/^([A-Za-z]+)(\d+)(?::([A-Za-z]+)(\d+))?$/);
@@ -294,7 +330,15 @@ export class WorkbookEngine {
 
     for (let i = 1; i < args.length; i += 2) {
       const critRange = this.parseRange(args[i], currentSheetId);
-      const rawCriteria = this.stripQuotes(args[i + 1]);
+      let rawCriteria = args[i + 1].trim();
+      const cellRefMatch = rawCriteria.match(/^(?:(?:'[^']+'|"[^"]+"|[A-Za-z0-9_]+)!)?\$?([A-Za-z]+)\$?(\d+)$/);
+      if (cellRefMatch && !rawCriteria.startsWith('"') && !rawCriteria.startsWith("'")) {
+        const val = this.evalSimpleExpression(rawCriteria, currentSheetId);
+        rawCriteria = val !== undefined && val !== null ? String(val) : '';
+      } else {
+        rawCriteria = this.stripQuotes(rawCriteria);
+      }
+
       if (critRange && critRange.sheet) {
         const critCol = critRange.sheet.columns.get(critRange.startCol) || [];
         criteriaPairs.push({
@@ -316,7 +360,15 @@ export class WorkbookEngine {
 
     for (let i = 0; i < args.length; i += 2) {
       const critRange = this.parseRange(args[i], currentSheetId);
-      const rawCriteria = this.stripQuotes(args[i + 1]);
+      let rawCriteria = args[i + 1].trim();
+      const cellRefMatch = rawCriteria.match(/^(?:(?:'[^']+'|"[^"]+"|[A-Za-z0-9_]+)!)?\$?([A-Za-z]+)\$?(\d+)$/);
+      if (cellRefMatch && !rawCriteria.startsWith('"') && !rawCriteria.startsWith("'")) {
+        const val = this.evalSimpleExpression(rawCriteria, currentSheetId);
+        rawCriteria = val !== undefined && val !== null ? String(val) : '';
+      } else {
+        rawCriteria = this.stripQuotes(rawCriteria);
+      }
+
       if (critRange && critRange.sheet) {
         const critCol = critRange.sheet.columns.get(critRange.startCol) || [];
         criteriaPairs.push({
@@ -328,6 +380,132 @@ export class WorkbookEngine {
     }
 
     return vectorCountIfs(criteriaPairs, maxRows);
+  }
+
+  private evalCountIf(argsStr: string, currentSheetId?: string): number {
+    const args = this.splitArgs(argsStr);
+    if (args.length < 2) return 0;
+    return this.evalCountIfs(`${args[0]}, ${args[1]}`, currentSheetId);
+  }
+
+  private evalSumIfArray(rawExpr: string, currentSheetId?: string): number {
+    const inner = rawExpr.slice(4, -1).trim();
+
+    const condRegex = /IF\s*\(([^,]+),/gi;
+    const conditions: string[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = condRegex.exec(inner)) !== null) {
+      conditions.push(m[1].trim());
+    }
+    if (conditions.length === 0) return 0;
+
+    const tailMatch = inner.match(/,\s*([^,()]+)\s*,\s*([^,()]+)\s*\)+$/);
+    const trueValStr = tailMatch ? tailMatch[1].trim() : '1';
+
+    const criteriaArgs: string[] = [];
+    for (const condStr of conditions) {
+      const parts = condStr.split('=');
+      if (parts.length !== 2) continue;
+      let rangeStr = parts[0].trim();
+      let critStr = parts[1].trim();
+      if (!this.parseRange(rangeStr, currentSheetId)) {
+        rangeStr = parts[1].trim();
+        critStr = parts[0].trim();
+      }
+      const cellRefMatch = critStr.match(/^(?:(?:'[^']+'|"[^"]+"|[A-Za-z0-9_]+)!)?\$?([A-Za-z]+)\$?(\d+)$/);
+      if (cellRefMatch) {
+        const cellVal = this.evalSimpleExpression(critStr, currentSheetId);
+        critStr = cellVal !== undefined && cellVal !== null ? String(cellVal) : '';
+      }
+      criteriaArgs.push(rangeStr, critStr);
+    }
+
+    if (criteriaArgs.length === 0) return 0;
+
+    if (trueValStr !== '1' && this.parseRange(trueValStr, currentSheetId)) {
+      return this.evalSumIfs([trueValStr, ...criteriaArgs].join(','), currentSheetId);
+    } else {
+      return this.evalCountIfs(criteriaArgs.join(','), currentSheetId);
+    }
+  }
+
+  private evalSumIf(argsStr: string, currentSheetId?: string): number {
+    const args = this.splitArgs(argsStr);
+    if (args.length < 2) return 0;
+
+    const range = this.parseRange(args[0], currentSheetId);
+    if (!range || !range.sheet) return 0;
+
+    const rawCriteria = this.evalSimpleExpression(args[1], currentSheetId);
+    const predicate = compileCriteria(rawCriteria);
+
+    const sumRange = args[2] ? this.parseRange(args[2], currentSheetId) : range;
+    if (!sumRange || !sumRange.sheet) return 0;
+
+    const critCol = range.sheet.columns.get(range.startCol) || [];
+    const sumCol = sumRange.sheet.columns.get(sumRange.startCol) || [];
+
+    let sum = 0;
+    const startRow = range.startRow;
+    const endRow = Math.min(range.endRow, critCol.length - 1);
+    const sumStartRow = sumRange.startRow;
+
+    for (let r = startRow; r <= endRow; r++) {
+      if (testPredicate(critCol[r], predicate)) {
+        const targetRow = sumStartRow + (r - startRow);
+        const val = Number(sumCol[targetRow]);
+        if (!isNaN(val)) sum += val;
+      }
+    }
+    return sum;
+  }
+
+  private evalVlookup(argsStr: string, currentSheetId?: string): any {
+    const args = this.splitArgs(argsStr);
+    if (args.length < 3) return null;
+
+    let lookupVal = this.evalSimpleExpression(args[0], currentSheetId);
+    if (lookupVal === null || lookupVal === undefined) {
+      lookupVal = this.stripQuotes(args[0]);
+    }
+
+    const tableRange = this.parseRange(args[1], currentSheetId);
+    const colIndex = parseInt(args[2], 10);
+    if (!tableRange || !tableRange.sheet || isNaN(colIndex) || colIndex < 1) {
+      return '#N/A';
+    }
+
+    const lookupCol = tableRange.sheet.columns.get(tableRange.startCol) || [];
+    const targetColIdx = tableRange.startCol + colIndex - 1;
+    const targetCol = tableRange.sheet.columns.get(targetColIdx) || [];
+
+    const lookupStr = String(lookupVal).trim().toLowerCase();
+    const lookupNum = Number(lookupVal);
+    const isNum = !isNaN(lookupNum) && String(lookupVal).trim() !== '';
+
+    const startRow = tableRange.startRow;
+    const endRow = Math.min(tableRange.endRow, lookupCol.length - 1);
+
+    for (let r = startRow; r <= endRow; r++) {
+      const cellVal = lookupCol[r];
+      if (cellVal === undefined || cellVal === null) continue;
+
+      let isMatch = false;
+      if (isNum && typeof cellVal === 'number') {
+        isMatch = cellVal === lookupNum;
+      } else if (isNum && !isNaN(Number(cellVal))) {
+        isMatch = Number(cellVal) === lookupNum;
+      } else {
+        isMatch = String(cellVal).trim().toLowerCase() === lookupStr;
+      }
+
+      if (isMatch) {
+        const res = targetCol[r];
+        return res !== undefined && res !== null ? res : '';
+      }
+    }
+
+    return '#N/A';
   }
 
   private evalSimpleExpression(expr: string, currentSheetId?: string): any {

@@ -16,6 +16,12 @@
 # antigravity / gemini scratch
 .gemini/antigravity/scratch/
 
+# local development scratch
+/scratch/
+
+# Redis local persistence
+dump.rdb
+
 # next.js
 /.next/
 /out/
@@ -31,9 +37,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+.pnpm-debug.log
 
-# env files (can opt-in for committing if needed)
+# env files (can opt-in to committing if needed)
 .env*
 
 # vercel

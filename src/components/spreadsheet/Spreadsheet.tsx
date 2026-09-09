@@ -258,11 +258,12 @@ export default function Spreadsheet() {
                 const lookupVal = (sheetName: string | undefined, rIdx: number, cIdx: number) => {
                   let targetWs = worksheet;
                   if (sheetName) {
+                    const cleanName = sheetName.replace(/^['"]|['"]$/g, '').trim().toLowerCase();
                     targetWs =
                       (workbook?.getSheets
                         ? workbook.getSheets().find((s: any) => {
                             const sName = (s.getSheetName?.() || s.getName?.() || s.getSheetId?.() || '').toLowerCase();
-                            return sName === sheetName.toLowerCase();
+                            return sName === cleanName;
                           })
                         : null) || worksheet;
                   }

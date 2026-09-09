@@ -78,8 +78,14 @@ class WorkbookSessionManager {
   }
 }
 
-export const workbookSession = new WorkbookSessionManager();
+const GLOBAL_SESSION_KEY = '__WORKBOOK_SESSION_INSTANCE__';
+
+export const workbookSession: WorkbookSessionManager =
+  typeof window !== 'undefined' && (window as any)[GLOBAL_SESSION_KEY]
+    ? (window as any)[GLOBAL_SESSION_KEY]
+    : new WorkbookSessionManager();
 
 if (typeof window !== 'undefined') {
+  (window as any)[GLOBAL_SESSION_KEY] = workbookSession;
   (window as any).workbookSession = workbookSession;
 }

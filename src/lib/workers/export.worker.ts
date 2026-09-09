@@ -56,6 +56,26 @@ function crc32Update(crc: number, buf: Uint8Array): number {
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
+self.onerror = (message, source, lineno, colno, error) => {
+  console.error('[EXPORT_WORKER_GLOBAL_ERROR]', {
+    message,
+    source,
+    lineno,
+    colno,
+    errorName: error?.name,
+    errorMessage: error?.message,
+    errorStack: error?.stack,
+  });
+};
+
+self.onunhandledrejection = (event) => {
+  console.error('[EXPORT_WORKER_UNHANDLED_REJECTION]', {
+    reason: event?.reason,
+    stack: event?.reason?.stack,
+    message: event?.reason?.message,
+  });
+};
+
 interface ZipEntryMeta {
   filename: string;
   filenameBytes: Uint8Array;
@@ -243,6 +263,47 @@ class CopyThroughZipWriter {
     });
   }
 
+  public addPrecompressedEntry(
+    filename: string,
+    compressedBuf: Uint8Array,
+    crc: number,
+    uncompressedSize: number
+  ): void {
+    const filenameBytes = textEncoder.encode(filename);
+    const compMethod = 8;
+    const compressedSize = compressedBuf.length;
+    const localHeaderOffset = this.currentOffset;
+
+    const header = new Uint8Array(30 + filenameBytes.length);
+    const view = new DataView(header.buffer, header.byteOffset, header.byteLength);
+    view.setUint32(0, 0x04034b50, true);
+    view.setUint16(4, 20, true);
+    view.setUint16(6, 0x0800, true);
+    view.setUint16(8, compMethod, true);
+    view.setUint16(10, 0, true);
+    view.setUint16(12, 0, true);
+    view.setUint32(14, crc, true);
+    view.setUint32(18, compressedSize, true);
+    view.setUint32(22, uncompressedSize, true);
+    view.setUint16(26, filenameBytes.length, true);
+    view.setUint16(28, 0, true);
+    header.set(filenameBytes, 30);
+
+    this.outputChunks.push(header);
+    this.outputChunks.push(compressedBuf);
+    this.currentOffset += header.length + compressedBuf.length;
+
+    this.entries.push({
+      filename,
+      filenameBytes,
+      crc,
+      compMethod,
+      compressedSize,
+      uncompressedSize,
+      localHeaderOffset,
+    });
+  }
+
   public finalize(): Uint8Array {
     const centralDirOffset = this.currentOffset;
     let centralDirSize = 0;
@@ -307,14 +368,47 @@ class CopyThroughZipWriter {
 let exportMode: 'COPY_THROUGH' | 'GREENFIELD' = 'GREENFIELD';
 let originalZipReader: FastZipReader | null = null;
 let dirtySheetIndexSet = new Set<number>();
-const dirtySheetXmlMap = new Map<string, Uint8Array>();
+interface PrecompressedSheetData {
+  compressedBuf: Uint8Array;
+  crc: number;
+  uncompressedSize: number;
+}
+const dirtySheetCompressedMap = new Map<string, PrecompressedSheetData>();
+let accumulatedUncompressedBytes = 0;
+let accumulatedCompressedBytes = 0;
 
 let copyThroughWriter: CopyThroughZipWriter | null = null;
 let sheetsMetadata: Array<{ id: string; index: number; name: string }> = [];
 let availableSheetNames: string[] = [];
 let currentSheetChunks: Uint8Array[] = [];
 let currentSheetTail = '';
+let currentSheetRawHead: string | null = null;
+let currentSheetColumnData: Record<number, { w?: number; hd?: number }> | null = null;
+const currentSheetColMaxLen = new Map<number, number>();
 const sharedFormulaMap = new Map<string, string>();
+const currentSheetCellStyles = new Map<string, string>();
+
+function getVisualCharWidth(str: string): number {
+  let len = 0;
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code >= 0x1100 && (
+      (code >= 0x1100 && code <= 0x115f) ||
+      (code >= 0x2e80 && code <= 0xa4cf) ||
+      (code >= 0xac00 && code <= 0xd7a3) ||
+      (code >= 0xf900 && code <= 0xfaff) ||
+      (code >= 0xfe10 && code <= 0xfe19) ||
+      (code >= 0xfe30 && code <= 0xfe6f) ||
+      (code >= 0xff00 && code <= 0xff60) ||
+      (code >= 0xffe0 && code <= 0xffe6)
+    )) {
+      len += 2;
+    } else {
+      len += 1;
+    }
+  }
+  return len;
+}
 
 function sanitizeSheetNames(formula: string): string {
   if (!formula) return formula;
@@ -330,7 +424,10 @@ function sanitizeSheetNames(formula: string): string {
   return result;
 }
 
+console.log('[WORKER_SCRIPT_LOADED] Export worker script parsed and loaded in thread!');
+
 self.onmessage = async (e: MessageEvent) => {
+  console.log(`[WORKER_RAW_ONMESSAGE] Message event received! type=${e?.data?.type}`);
   const {
     type,
     mode,
@@ -358,8 +455,10 @@ self.onmessage = async (e: MessageEvent) => {
       sheetsMetadata = meta || [];
       currentSheetChunks = [];
       sharedFormulaMap.clear();
-      dirtySheetXmlMap.clear();
+      dirtySheetCompressedMap.clear();
       dirtySheetIndexSet = new Set(dirtySheetIndices || []);
+      accumulatedUncompressedBytes = 0;
+      accumulatedCompressedBytes = 0;
 
       if (exportMode === 'COPY_THROUGH') {
         const u8 = originalBuffer instanceof Uint8Array ? originalBuffer : new Uint8Array(originalBuffer);
@@ -391,7 +490,7 @@ self.onmessage = async (e: MessageEvent) => {
 
         let workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <calcPr fullCalcOnLoad="1" forceFullCalc="1"/>
+  <calcPr/>
   <sheets>`;
         sheetsMetadata.forEach((s) => {
           workbookXml += `\n    <sheet name="${escapeXml(s.name)}" sheetId="${s.index}" r:id="rId${s.index}"/>`;
@@ -427,29 +526,12 @@ self.onmessage = async (e: MessageEvent) => {
       console.log(`[WORKER] Received INIT_SHEET: ${sheetName} (sheet index: ${sheetIndex})`);
       currentSheetChunks = [];
       sharedFormulaMap.clear();
+      currentSheetCellStyles.clear();
       currentSheetTail = '';
+      currentSheetRawHead = null;
+      currentSheetColumnData = columnData && typeof columnData === 'object' ? columnData : null;
+      currentSheetColMaxLen.clear();
 
-      let colsXml = '';
-      if (columnData && typeof columnData === 'object') {
-        const colIndices = Object.keys(columnData).map(Number).sort((a, b) => a - b);
-        if (colIndices.length > 0) {
-          colsXml = '  <cols>\n';
-          for (let i = 0; i < colIndices.length; i++) {
-            const cIdx = colIndices[i];
-            const col = columnData[cIdx];
-            if (col) {
-              const colNum = cIdx + 1;
-              const w = col.w !== undefined ? col.w : 10;
-              const hd = col.hd === 1 ? ' hidden="1"' : '';
-              const customW = col.w !== undefined ? ' customWidth="1"' : '';
-              colsXml += `    <col min="${colNum}" max="${colNum}" width="${w}"${hd}${customW}/>\n`;
-            }
-          }
-          colsXml += '  </cols>\n';
-        }
-      }
-
-      let headerXml = '';
       if (exportMode === 'COPY_THROUGH' && originalZipReader) {
         const origEntry = originalZipReader.entries.get(`xl/worksheets/sheet${sheetIndex}.xml`);
         if (origEntry) {
@@ -459,29 +541,21 @@ self.onmessage = async (e: MessageEvent) => {
           const sheetDataStart = origXml.indexOf('<sheetData');
           const sheetDataEnd = origXml.indexOf('</sheetData>');
           if (sheetDataStart !== -1 && sheetDataEnd !== -1) {
-            let origHead = origXml.substring(0, sheetDataStart);
+            currentSheetRawHead = origXml.substring(0, sheetDataStart);
             currentSheetTail = origXml.substring(sheetDataEnd + '</sheetData>'.length);
 
-            if (colsXml) {
-              if (origHead.includes('<cols>')) {
-                origHead = origHead.replace(/<cols>[\s\S]*?<\/cols>/, colsXml.trim());
-              } else if (origHead.includes('</sheetViews>')) {
-                const svEnd = origHead.indexOf('</sheetViews>') + '</sheetViews>'.length;
-                origHead = origHead.substring(0, svEnd) + '\n' + colsXml + origHead.substring(svEnd);
-              } else {
-                origHead = origHead + colsXml;
-              }
+            // Index original cell styles (e.g. s="76" for dates) to preserve cell formats
+            const sheetDataXml = origXml.substring(sheetDataStart, sheetDataEnd);
+            const styleRegex = /<c\s+r="([A-Z0-9]+)"[^>]*\bs="(\d+)"/g;
+            let m: RegExpExecArray | null;
+            while ((m = styleRegex.exec(sheetDataXml)) !== null) {
+              currentSheetCellStyles.set(m[1], m[2]);
+              if (currentSheetCellStyles.size >= 20000) break;
             }
-            headerXml = origHead + '<sheetData>\n';
           }
         }
       }
 
-      if (!headerXml) {
-        headerXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">\n${colsXml}  <sheetData>\n`;
-      }
-
-      currentSheetChunks.push(textEncoder.encode(headerXml));
       self.postMessage({ type: 'ACK' });
       return;
     }
@@ -490,16 +564,35 @@ self.onmessage = async (e: MessageEvent) => {
       const cellDataRaw = chunkRows || {};
       const rowKeys = Object.keys(cellDataRaw).map(Number).sort((a, b) => a - b);
 
-      // Register shared master formulas in this chunk
+      // Register shared master formulas & track content lengths for proportional widths
       for (let rIdx = 0; rIdx < rowKeys.length; rIdx++) {
         const rowIndex = rowKeys[rIdx];
         const cols = cellDataRaw[rowIndex];
         if (cols) {
           const colKeys = Object.keys(cols).map(Number);
           for (let cIdx = 0; cIdx < colKeys.length; cIdx++) {
-            const cellPay = cols[colKeys[cIdx]];
-            if (cellPay && cellPay.f && cellPay.si !== undefined && cellPay.si !== null) {
-              sharedFormulaMap.set(String(cellPay.si), cellPay.f);
+            const colIndex = colKeys[cIdx];
+            const cellPay = cols[colIndex];
+            if (cellPay) {
+              if (cellPay.f && cellPay.si !== undefined && cellPay.si !== null) {
+                sharedFormulaMap.set(String(cellPay.si), cellPay.f);
+              }
+              let cellStr = '';
+              if (cellPay.v !== undefined && cellPay.v !== null) {
+                cellStr = String(cellPay.v);
+              } else if (cellPay.p && cellPay.p.body && typeof cellPay.p.body.dataStream === 'string') {
+                cellStr = cellPay.p.body.dataStream.replace(/[\r\n]+$/, '');
+              }
+              if (cellStr) {
+                const lines = cellStr.split(/\r?\n/);
+                for (let l = 0; l < lines.length; l++) {
+                  const lineLen = getVisualCharWidth(lines[l]);
+                  const prevMax = currentSheetColMaxLen.get(colIndex) || 0;
+                  if (lineLen > prevMax) {
+                    currentSheetColMaxLen.set(colIndex, lineLen);
+                  }
+                }
+              }
             }
           }
         }
@@ -525,6 +618,7 @@ self.onmessage = async (e: MessageEvent) => {
           if (!cellPay) continue;
 
           const cellRef = `${colToLetter(colIndex)}${rowNumber}`;
+          const styleAttr = currentSheetCellStyles.has(cellRef) ? ` s="${currentSheetCellStyles.get(cellRef)}"` : '';
 
           let formulaText = cellPay.f;
           if (!formulaText && cellPay.si !== undefined && cellPay.si !== null) {
@@ -550,33 +644,41 @@ self.onmessage = async (e: MessageEvent) => {
 
             if (formulaRes !== undefined) {
               if (cellPay.t === 2 || typeof formulaRes === 'number') {
-                chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${formulaRes}</v></c>`;
+                chunkXml += `<c r="${cellRef}"${styleAttr}><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${formulaRes}</v></c>`;
               } else if (cellPay.t === 3 || typeof formulaRes === 'boolean') {
-                chunkXml += `<c r="${cellRef}" t="b"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${formulaRes ? 1 : 0}</v></c>`;
+                chunkXml += `<c r="${cellRef}"${styleAttr} t="b"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${formulaRes ? 1 : 0}</v></c>`;
               } else if (typeof formulaRes === 'string' && formulaRes.startsWith('#')) {
-                chunkXml += `<c r="${cellRef}" t="e"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${escapeXml(formulaRes)}</v></c>`;
+                chunkXml += `<c r="${cellRef}"${styleAttr} t="e"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${escapeXml(formulaRes)}</v></c>`;
               } else {
-                chunkXml += `<c r="${cellRef}" t="str"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${escapeXml(String(formulaRes))}</v></c>`;
+                chunkXml += `<c r="${cellRef}"${styleAttr} t="str"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f><v>${escapeXml(String(formulaRes))}</v></c>`;
               }
             } else {
-              chunkXml += `<c r="${cellRef}"><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f></c>`;
+              chunkXml += `<c r="${cellRef}"${styleAttr}><f${refAttr}>${escapeFormulaXml(parsedFormula)}</f></c>`;
             }
           } else if (cellPay.v !== undefined && cellPay.v !== null) {
             if (cellPay.t === 2 || typeof cellPay.v === 'number') {
-              chunkXml += `<c r="${cellRef}"><v>${cellPay.v}</v></c>`;
+              chunkXml += `<c r="${cellRef}"${styleAttr}><v>${cellPay.v}</v></c>`;
             } else if (cellPay.t === 3 || typeof cellPay.v === 'boolean') {
-              chunkXml += `<c r="${cellRef}" t="b"><v>${cellPay.v ? 1 : 0}</v></c>`;
+              chunkXml += `<c r="${cellRef}"${styleAttr} t="b"><v>${cellPay.v ? 1 : 0}</v></c>`;
+            } else if (typeof cellPay.v === 'string' && /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/.test(cellPay.v)) {
+              const d = new Date(cellPay.v);
+              if (!isNaN(d.getTime())) {
+                const serial = Math.round((d.getTime() - Date.UTC(1899, 11, 30)) / 86400000);
+                chunkXml += `<c r="${cellRef}"${styleAttr}><v>${serial}</v></c>`;
+              } else {
+                chunkXml += `<c r="${cellRef}"${styleAttr} t="inlineStr"><is><t>${escapeXml(cellPay.v)}</t></is></c>`;
+              }
             } else {
-              chunkXml += `<c r="${cellRef}" t="inlineStr"><is><t>${escapeXml(cellPay.v)}</t></is></c>`;
+              chunkXml += `<c r="${cellRef}"${styleAttr} t="inlineStr"><is><t>${escapeXml(cellPay.v)}</t></is></c>`;
             }
           } else if (cellPay.p && cellPay.p.body && typeof cellPay.p.body.dataStream === 'string') {
             const textVal = cellPay.p.body.dataStream.replace(/[\r\n]+$/, '');
             if (cellPay.t === 2) {
-              chunkXml += `<c r="${cellRef}"><v>${escapeXml(textVal)}</v></c>`;
+              chunkXml += `<c r="${cellRef}"${styleAttr}><v>${escapeXml(textVal)}</v></c>`;
             } else if (cellPay.t === 3) {
-              chunkXml += `<c r="${cellRef}" t="b"><v>${textVal === 'true' || textVal === '1' ? 1 : 0}</v></c>`;
+              chunkXml += `<c r="${cellRef}"${styleAttr} t="b"><v>${textVal === 'true' || textVal === '1' ? 1 : 0}</v></c>`;
             } else {
-              chunkXml += `<c r="${cellRef}" t="inlineStr"><is><t>${escapeXml(textVal)}</t></is></c>`;
+              chunkXml += `<c r="${cellRef}"${styleAttr} t="inlineStr"><is><t>${escapeXml(textVal)}</t></is></c>`;
             }
           }
         }
@@ -594,6 +696,66 @@ self.onmessage = async (e: MessageEvent) => {
 
     if (type === 'END_SHEET') {
       console.log(`[WORKER] sheet XML finalized for sheet index ${sheetIndex}`);
+
+      // Generate content-based proportional column widths
+      const colIndicesSet = new Set<number>();
+      for (const colIdx of currentSheetColMaxLen.keys()) {
+        colIndicesSet.add(colIdx);
+      }
+      if (currentSheetColumnData) {
+        for (const colKey of Object.keys(currentSheetColumnData)) {
+          colIndicesSet.add(Number(colKey));
+        }
+      }
+
+      let colsXml = '';
+      const sortedColIndices = Array.from(colIndicesSet).sort((a, b) => a - b);
+      if (sortedColIndices.length > 0) {
+        colsXml = '  <cols>\n';
+        for (let i = 0; i < sortedColIndices.length; i++) {
+          const cIdx = sortedColIndices[i];
+          const colNum = cIdx + 1;
+          const colConfig = currentSheetColumnData ? currentSheetColumnData[cIdx] : undefined;
+          const isHidden = colConfig?.hd === 1;
+          const maxLen = currentSheetColMaxLen.get(cIdx) || 0;
+
+          // Proportional width: content length + 3.5 padding, bounded between 8.43 and 60
+          let w: number;
+          if (maxLen > 0) {
+            w = Math.min(60, Math.max(8.43, Math.round((maxLen + 3.5) * 100) / 100));
+          } else if (colConfig && colConfig.w !== undefined) {
+            w = Math.round((colConfig.w / 8) * 100) / 100;
+            if (w < 8.43) w = 8.43;
+          } else {
+            w = 8.43;
+          }
+
+          const hd = isHidden ? ' hidden="1"' : '';
+          colsXml += `    <col min="${colNum}" max="${colNum}" width="${w}"${hd} customWidth="1"/>\n`;
+        }
+        colsXml += '  </cols>\n';
+      }
+
+      let headerXml = '';
+      if (currentSheetRawHead) {
+        let origHead = currentSheetRawHead;
+        if (colsXml) {
+          if (origHead.includes('<cols>')) {
+            origHead = origHead.replace(/<cols>[\s\S]*?<\/cols>/, colsXml.trim());
+          } else if (origHead.includes('</sheetViews>')) {
+            const svEnd = origHead.indexOf('</sheetViews>') + '</sheetViews>'.length;
+            origHead = origHead.substring(0, svEnd) + '\n' + colsXml + origHead.substring(svEnd);
+          } else {
+            origHead = origHead + colsXml;
+          }
+        }
+        headerXml = origHead + '<sheetData>\n';
+      } else {
+        headerXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">\n${colsXml}  <sheetData>\n`;
+      }
+
+      currentSheetChunks.unshift(textEncoder.encode(headerXml));
+
       if (currentSheetTail) {
         currentSheetChunks.push(textEncoder.encode('  </sheetData>' + currentSheetTail));
         currentSheetTail = '';
@@ -612,11 +774,36 @@ self.onmessage = async (e: MessageEvent) => {
 
       currentSheetChunks = [];
       sharedFormulaMap.clear();
+      currentSheetRawHead = null;
+      currentSheetColumnData = null;
+      currentSheetColMaxLen.clear();
+      currentSheetCellStyles.clear();
+
+      // Immediately compress uncompressed sheet XML and store only the compressed slice.
+      // This drops memory footprint from ~250 MB down to ~10 MB per sheet and frees fullSheetBuf for V8 GC!
+      const tComp0 = Date.now();
+      const crc = crc32Update(0, fullSheetBuf);
+      const uncompressedSize = fullSheetBuf.length;
+      const compressedBuf = deflateSync(fullSheetBuf, { level: 1 });
+      const compDuration = Date.now() - tComp0;
+
+      accumulatedUncompressedBytes += uncompressedSize;
+      accumulatedCompressedBytes += compressedBuf.length;
+      console.log(`[MEMORY_FORENSICS] Sheet ${sheetIndex} ("${sheetName}"): sheetXmlSize=${(uncompressedSize / 1024 / 1024).toFixed(2)} MB, compressedSize=${(compressedBuf.length / 1024 / 1024).toFixed(2)} MB, compressionDuration=${compDuration}ms | Cumulative Uncompressed=${(accumulatedUncompressedBytes / 1024 / 1024).toFixed(2)} MB, Cumulative Compressed=${(accumulatedCompressedBytes / 1024 / 1024).toFixed(2)} MB`);
 
       if (exportMode === 'COPY_THROUGH') {
-        dirtySheetXmlMap.set(`xl/worksheets/sheet${sheetIndex}.xml`, fullSheetBuf);
+        dirtySheetCompressedMap.set(`xl/worksheets/sheet${sheetIndex}.xml`, {
+          compressedBuf,
+          crc,
+          uncompressedSize,
+        });
       } else if (copyThroughWriter) {
-        copyThroughWriter.addNewEntry(`xl/worksheets/sheet${sheetIndex}.xml`, fullSheetBuf, 1);
+        copyThroughWriter.addPrecompressedEntry(
+          `xl/worksheets/sheet${sheetIndex}.xml`,
+          compressedBuf,
+          crc,
+          uncompressedSize
+        );
       }
 
       self.postMessage({ type: 'SHEET_ACK', sheetId });
@@ -628,52 +815,20 @@ self.onmessage = async (e: MessageEvent) => {
       if (!copyThroughWriter) throw new Error('ZIP generator is uninitialized.');
 
       if (exportMode === 'COPY_THROUGH' && originalZipReader) {
-        const hasDirtySheets = dirtySheetXmlMap.size > 0;
-
         // Stream all untouched entries directly in raw compressed form!
+        // Preserves calcChain.xml, workbook.xml, workbook.xml.rels, and [Content_Types].xml
+        // so Excel/WPS never recalculate formulas to 0 on open.
         for (const [filename, entry] of originalZipReader.entries) {
-          if (hasDirtySheets && filename === 'xl/calcChain.xml') {
-            // Discard stale calcChain when workbook has modified sheets!
-            console.log(`[WORKER] Discarding stale ${filename} because workbook has modified sheets.`);
-            continue;
-          }
-
-          if (dirtySheetXmlMap.has(filename)) {
-            // Replace with newly modified sheet XML buffer
-            const modifiedXmlBuf = dirtySheetXmlMap.get(filename)!;
-            copyThroughWriter.addNewEntry(filename, modifiedXmlBuf, 1);
+          if (dirtySheetCompressedMap.has(filename)) {
+            // Replace with newly modified sheet precompressed entry (0ms recompression CPU)
+            const precomp = dirtySheetCompressedMap.get(filename)!;
+            copyThroughWriter.addPrecompressedEntry(
+              filename,
+              precomp.compressedBuf,
+              precomp.crc,
+              precomp.uncompressedSize
+            );
             console.log(`[WORKER] Replaced modified sheet in stream: ${filename}`);
-          } else if (hasDirtySheets && filename === 'xl/_rels/workbook.xml.rels') {
-            // Clean calcChain relationship from workbook.xml.rels
-            const rawCompressedData = originalZipReader.getRawCompressedData(entry);
-            const uncompressed = inflateSync(rawCompressedData);
-            const relsXml = textDecoder.decode(uncompressed);
-            const cleanedRelsXml = relsXml.replace(/<Relationship [^>]*Target="calcChain\.xml"[^>]*\/>/g, '');
-            copyThroughWriter.addNewEntry(filename, cleanedRelsXml, 1);
-            console.log(`[WORKER] Cleaned calcChain relationship from ${filename}`);
-          } else if (hasDirtySheets && filename === '[Content_Types].xml') {
-            // Clean calcChain override from [Content_Types].xml
-            const rawCompressedData = originalZipReader.getRawCompressedData(entry);
-            const uncompressed = inflateSync(rawCompressedData);
-            const ctXml = textDecoder.decode(uncompressed);
-            const cleanedCtXml = ctXml.replace(/<Override [^>]*PartName="\/xl\/calcChain\.xml"[^>]*\/>/g, '');
-            copyThroughWriter.addNewEntry(filename, cleanedCtXml, 1);
-            console.log(`[WORKER] Cleaned calcChain override from ${filename}`);
-          } else if (hasDirtySheets && filename === 'xl/workbook.xml') {
-            // When calcChain is discarded, ensure workbook.xml has fullCalcOnLoad="1" forceFullCalc="1"
-            const rawCompressedData = originalZipReader.getRawCompressedData(entry);
-            const uncompressed = inflateSync(rawCompressedData);
-            let wbXml = textDecoder.decode(uncompressed);
-            if (wbXml.includes('<calcPr')) {
-              wbXml = wbXml.replace(/<calcPr\b([^>]*?)\/?>/g, (_match, attrs) => {
-                const cleanAttrs = attrs.replace(/\s*(fullCalcOnLoad|forceFullCalc)="[^"]*"/g, '');
-                return `<calcPr${cleanAttrs} fullCalcOnLoad="1" forceFullCalc="1"/>`;
-              });
-            } else {
-              wbXml = wbXml.replace('</workbook>', '  <calcPr fullCalcOnLoad="1" forceFullCalc="1"/>\n</workbook>');
-            }
-            copyThroughWriter.addNewEntry(filename, wbXml, 1);
-            console.log(`[WORKER] Ensured fullCalcOnLoad and forceFullCalc in ${filename}`);
           } else {
             // Direct zero-copy from original binary slice!
             const rawCompressedData = originalZipReader.getRawCompressedData(entry);
@@ -683,11 +838,11 @@ self.onmessage = async (e: MessageEvent) => {
       }
 
       const uint8Array = copyThroughWriter.finalize();
-      console.log(`[WORKER] XLSX packaging complete. Output size: ${(uint8Array.byteLength / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`[WORKER] XLSX packaging complete. finalZipSize: ${(uint8Array.byteLength / 1024 / 1024).toFixed(2)} MB (${uint8Array.byteLength} bytes)`);
 
       copyThroughWriter = null;
       originalZipReader = null;
-      dirtySheetXmlMap.clear();
+      dirtySheetCompressedMap.clear();
       dirtySheetIndexSet.clear();
 
       (self as any).postMessage({ type: 'COMPLETE', buffer: uint8Array.buffer }, [uint8Array.buffer]);

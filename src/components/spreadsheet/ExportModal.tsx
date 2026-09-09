@@ -47,17 +47,33 @@ export default function ExportModal({ univerAPI, onClose, activeFileName, active
   //   return { blob, targetName };
   // };
 
+function sanitizeExportFilename(rawInput: string, format: 'xlsx' | 'csv'): string {
+  let clean = (rawInput || '').trim();
+
+  // Strip illegal Windows filesystem characters and control characters
+  clean = clean.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+
+  // Strip trailing spaces and dots (invalid on Windows filesystem)
+  clean = clean.replace(/[. ]+$/, '');
+
+  // Strip existing extension matching target format (case-insensitive)
+  const extRegex = new RegExp(`\\.${format}$`, 'i');
+  clean = clean.replace(extRegex, '');
+
+  if (!clean || clean.trim() === '') {
+    clean = `workbook-export-${Date.now()}`;
+  }
+
+  return `${clean}.${format}`;
+}
+
 const getExportBlob = async (
   onProgress: (percent: number, msg: string) => void
 ): Promise<{ blob: Blob; targetName: string }> => {
   let blob: Blob;
-  let targetName = filenameInput.trim();
+  const targetName = sanitizeExportFilename(filenameInput, format);
 
-  if (!targetName.endsWith(`.${format}`)) {
-    targetName += `.${format}`;
-  }
-
-  console.log('[EXPORT MODAL] Target name:', targetName);
+  console.log('[EXPORT MODAL] Sanitized target name:', targetName);
   console.log('[EXPORT MODAL] Format:', format);
   console.log('[EXPORT MODAL] univerAPI exists:', !!univerAPI);
 
@@ -70,7 +86,6 @@ const getExportBlob = async (
     });
 
     console.log('[EXPORT MODAL] AFTER exportWorkbookToExcel');
-    console.log('[EXPORT MODAL] Blob:', blob);
     console.log('[EXPORT MODAL] Blob size:', blob?.size);
     console.log('[EXPORT MODAL] Blob type:', blob?.type);
   } else {
@@ -82,12 +97,11 @@ const getExportBlob = async (
     });
 
     console.log('[EXPORT MODAL] AFTER exportActiveSheetToCSV');
-    console.log('[EXPORT MODAL] Blob:', blob);
     console.log('[EXPORT MODAL] Blob size:', blob?.size);
     console.log('[EXPORT MODAL] Blob type:', blob?.type);
   }
 
-  console.log('[EXPORT MODAL] Returning blob');
+  console.log('[EXPORT MODAL] Returning blob with filename:', targetName);
 
   return { blob, targetName };
 };
@@ -107,21 +121,41 @@ const getExportBlob = async (
       });
 
       setProgressPercent(95);
-      setProgressMessage('Mengunduh file ke browser...');
+      setProgressMessage('Menyiapkan file Excel untuk diunduh...');
 
-      // Trigger download
-      const url = URL.createObjectURL(blob);
+      // Native Client-Side Download: 0ms, 0 network requests, immune to socket exhaustion!
+      // Uses File object + a.download to guarantee the exact filename and .xlsx extension.
+      // 120s URL lifetime ensures Edge/Chrome download manager never falls back to UUID.
+      const mimeType = format === 'xlsx'
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'text/csv;charset=utf-8;';
+      const file = new File([blob], targetName, {
+        type: mimeType,
+        lastModified: Date.now(),
+      });
+      const url = URL.createObjectURL(file);
       const a = document.createElement('a');
+      a.style.display = 'none';
       a.href = url;
       a.download = targetName;
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
+      setTimeout(() => {
+        try {
+          if (document.body.contains(a)) {
+            document.body.removeChild(a);
+          }
+          URL.revokeObjectURL(url);
+        } catch (cleanupErr) {
+          console.warn('[EXPORT] Cleanup warning:', cleanupErr);
+        }
+      }, 120000);
+
+      console.log('[EXPORT][T9] EXPORT_COMPLETE: Download initiated successfully');
       setProgressPercent(100);
       setProgressMessage('✓ Pengunduhan selesai!');
-      setTimeout(onClose, 800);
+      setTimeout(onClose, 1000);
     } catch (e: any) {
       setError(e.message || 'Export failed.');
       setLoading(false);

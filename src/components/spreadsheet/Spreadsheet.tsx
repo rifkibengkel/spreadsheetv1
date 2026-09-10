@@ -21,22 +21,96 @@ import { workbookSession } from '@/lib/session/workbookSession';
 import { CalculationScheduler } from '@/lib/workers/pool/calculationScheduler';
 import { installUniverCalculationPassivation, applyCalculationPatchSilent } from '@/lib/univer/univerPassivation';
 import { evaluateMicroFormula, extractReferencedCells } from '@/lib/univer/microFormulaEvaluator';
+import { DatasetReader } from '@/lib/storage/opfs/datasetReader';
+import { ViewportController } from '@/lib/viewport/viewportController';
+import { UniverViewportAdapter } from '@/lib/viewport/univerViewportAdapter';
 import SpreadsheetToolbar from './SpreadsheetToolbar';
+import JumpToRowModal from './JumpToRowModal';
 
 export default function Spreadsheet() {
   const containerRef = useRef<HTMLDivElement>(null);
   const univerRef = useRef<any>(null);
   const schedulerRef = useRef<CalculationScheduler | null>(null);
   const formulaRegistryRef = useRef<Map<string, { sheetId: string; row: number; col: number; formula: string }>>(new Map());
+  const viewportControllerRef = useRef<ViewportController | null>(null);
+  const datasetReaderRef = useRef<DatasetReader | null>(null);
   const [univerAPI, setUniverAPI] = useState<any>(null);
 
   const [activeFileName, setActiveFileName] = useState('workbook-initial.xlsx');
   const [activeFileFormat, setActiveFileFormat] = useState<'xlsx' | 'csv'>('xlsx');
+  const [isJumpModalOpen, setIsJumpModalOpen] = useState(false);
+  const [datasetRowCount, setDatasetRowCount] = useState<number>(0);
 
-  const handleFileImported = useCallback((filename: string, format: 'xlsx' | 'csv') => {
+  const mountOPFSDataset = useCallback(async (meta?: any) => {
+    const api = univerRef.current?.univerAPI;
+    if (!api) return;
+
+    let reader = datasetReaderRef.current;
+    if (!reader) {
+      reader = new DatasetReader();
+      datasetReaderRef.current = reader;
+    }
+
+    const ready = await reader.init();
+    if (!ready) {
+      console.warn('[Spreadsheet] OPFS dataset init failed:', reader.getInitError());
+      return;
+    }
+
+    const metadata = meta || reader.getMetadata();
+    if (!metadata || metadata.status !== 'COMMITTED') return;
+
+    const adapter = new UniverViewportAdapter(api);
+    let controller = viewportControllerRef.current;
+    if (!controller) {
+      controller = new ViewportController(reader, adapter);
+      viewportControllerRef.current = controller;
+    } else {
+      controller.setAdapter(adapter);
+    }
+
+    const success = await controller.mount(metadata);
+    if (success) {
+      setDatasetRowCount(metadata.rowCount);
+      setActiveFileName(metadata.fileName);
+      setActiveFileFormat('csv');
+      (window as any).__viewportController = controller;
+      (window as any).__datasetReader = reader;
+      console.log(`[Spreadsheet] Successfully mounted OPFS dataset: ${metadata.fileName} (${metadata.rowCount} rows)`);
+    }
+  }, []);
+
+  const handleFileImported = useCallback(async (filename: string, format: 'xlsx' | 'csv', metadata?: any) => {
     setActiveFileName(filename);
     setActiveFileFormat(format);
+    if (format === 'csv') {
+      await mountOPFSDataset(metadata);
+    } else {
+      setDatasetRowCount(0);
+      if (viewportControllerRef.current) {
+        viewportControllerRef.current.clearUserEdits();
+      }
+    }
+  }, [mountOPFSDataset]);
+
+  const handleJumpToRow = useCallback(async (rowNum: number) => {
+    if (viewportControllerRef.current) {
+      await viewportControllerRef.current.jumpToRow(rowNum);
+    }
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g') {
+        e.preventDefault();
+        if (datasetRowCount > 0) {
+          setIsJumpModalOpen(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [datasetRowCount]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -212,6 +286,14 @@ export default function Spreadsheet() {
               }
             }
 
+            // Architecture D: Viewport sliding on user scrolling
+            if (commandId === 'sheet.operation.set-scroll' && viewportControllerRef.current) {
+              const startRow = params?.sheetViewStartRow;
+              if (typeof startRow === 'number') {
+                viewportControllerRef.current.handleScroll(startRow);
+              }
+            }
+
             // Dirty sheet tracking for export: ONLY on actual cell mutations / structural changes
             if (
               (commandId === 'sheet.mutation.set-range-values' ||
@@ -282,6 +364,11 @@ export default function Spreadsheet() {
                       const c = parseInt(cStr, 10);
                       const cellItem = rowObj[c];
                       if (!cellItem) continue;
+
+                      // Record user edit in ViewportController so it survives eviction cycles
+                      if (viewportControllerRef.current) {
+                        viewportControllerRef.current.recordUserEdit(targetSheetId, r, c, cellItem.v, cellItem.f);
+                      }
 
                       // Handle formula input: evaluate immediately with zero UI freeze
                       if (cellItem?.f && typeof cellItem.f === 'string' && cellItem.f.startsWith('=')) {
@@ -467,6 +554,14 @@ export default function Spreadsheet() {
         activeFileName={activeFileName}
         activeFileFormat={activeFileFormat}
         onFileImported={handleFileImported}
+        onOpenJumpToRow={datasetRowCount > 0 ? () => setIsJumpModalOpen(true) : undefined}
+        datasetRowCount={datasetRowCount}
+      />
+      <JumpToRowModal
+        isOpen={isJumpModalOpen}
+        onClose={() => setIsJumpModalOpen(false)}
+        maxRow={datasetRowCount > 0 ? datasetRowCount : 100}
+        onJump={handleJumpToRow}
       />
       <div className="univer-container-outer">
         <div ref={containerRef} className="univer-container-inner" />

@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { importExcelToWorkbookDataAsync, replaceUniverWorkbook } from '@/lib/import/excel';
-import { importCSVBatched } from '@/lib/import/csv';
+import { importLargeCSVDataset } from '@/lib/import/csvLargeDataset';
 
 interface ImportModalProps {
   univerAPI: any;
   onClose: () => void;
-  onFileImported?: (filename: string, format: 'xlsx' | 'csv') => void;
+  onFileImported?: (filename: string, format: 'xlsx' | 'csv', metadata?: any) => void | Promise<void>;
 }
 
 export default function ImportModal({ univerAPI, onClose, onFileImported }: ImportModalProps) {
@@ -64,28 +64,31 @@ export default function ImportModal({ univerAPI, onClose, onFileImported }: Impo
         }, 500);
       } else if (ext === 'csv') {
         setProgress(5);
-        setStatusMessage('Membaca file CSV...');
-        importCSVBatched(
-          file,
-          univerAPI,
-          (percent) => {
-            const scaled = Math.min(88, Math.max(5, Math.round(5 + (percent * 0.83))));
-            setProgress(scaled);
-            setStatusMessage('Mengurai data CSV...');
-          },
-          () => {
-            setProgress(100);
-            setStatusMessage('✓ Impor CSV Berhasil!');
-            onFileImported?.(file.name, 'csv');
-            setTimeout(() => {
-              onClose();
-            }, 500);
-          },
-          (err) => {
-            setError(err.message || 'CSV Import gagal.');
-            setLoading(false);
-          }
-        );
+        setStatusMessage('Membuka worker impor streaming OPFS...');
+        const res = await importLargeCSVDataset(file, (prog) => {
+          setProgress(prog.percent);
+          if (prog.phase === 'READING_HEADER') setStatusMessage('Membaca header CSV...');
+          else if (prog.phase === 'STREAMING_ROWS') {
+            const mb = (prog.bytesProcessed / (1024 * 1024)).toFixed(1);
+            setStatusMessage(`Menyimpan baris ke OPFS (${prog.rowsProcessed.toLocaleString()} baris, ${mb} MB)...`);
+          } else if (prog.phase === 'BUILDING_INDEX') setStatusMessage('Menyusun indeks N+1 uint64...');
+          else if (prog.phase === 'VALIDATING') setStatusMessage('Memvalidasi integritas dataset...');
+          else if (prog.phase === 'COMMITTED') setStatusMessage('✓ Dataset COMMITTED ke OPFS!');
+        });
+
+        console.log('[IMPORT_RESULT]', res);
+        setProgress(95);
+        setStatusMessage('Menyiapkan tampilan spreadsheet (viewport 1.000 baris)...');
+        try {
+          await onFileImported?.(file.name, 'csv', res.metadata);
+        } catch (mountErr) {
+          console.warn('[ImportModal] Viewport mount warning:', mountErr);
+        }
+        setProgress(100);
+        setStatusMessage(`✓ Berhasil dibuka (${res.metadata.rowCount.toLocaleString()} baris data)!`);
+        setTimeout(() => {
+          onClose();
+        }, 500);
       } else {
         setError('Format tidak didukung. Harap gunakan file .xlsx, .xls, atau .csv');
         setLoading(false);

@@ -9,6 +9,8 @@ interface SpreadsheetToolbarProps {
   activeFileName: string;
   activeFileFormat: 'xlsx' | 'csv';
   onFileImported: (filename: string, format: 'xlsx' | 'csv') => void;
+  onOpenJumpToRow?: () => void;
+  datasetRowCount?: number;
 }
 
 const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
@@ -16,6 +18,8 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
   activeFileName,
   activeFileFormat,
   onFileImported,
+  onOpenJumpToRow,
+  datasetRowCount,
 }: SpreadsheetToolbarProps) {
   const [showImport, setShowImport] = useState(false);
   const [showExport, setShowExport] = useState(false);
@@ -137,6 +141,21 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38bdf8' }} />
             {activeFileName}
           </span>
+          {datasetRowCount && datasetRowCount > 0 ? (
+            <span
+              style={{
+                padding: '4px 10px',
+                borderRadius: '16px',
+                background: 'rgba(99, 102, 241, 0.15)',
+                color: '#a5b4fc',
+                fontSize: '11px',
+                border: '1px solid rgba(99, 102, 241, 0.35)',
+                fontWeight: '600',
+              }}
+            >
+              ⚡ {datasetRowCount.toLocaleString()} baris
+            </span>
+          ) : null}
         </div>
 
         {/* Filter Controls */}
@@ -149,6 +168,16 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
             🧹 Clear
           </button>
         </div>
+
+        {onOpenJumpToRow && (
+          <button
+            onClick={onOpenJumpToRow}
+            style={jumpBtnStyle}
+            title="Lompat ke baris spesifik di dataset besar (Ctrl+G)"
+          >
+            🔍 Lompat (Ctrl+G)
+          </button>
+        )}
 
         <button onClick={() => setShowImport(true)} style={importBtnStyle}>
           📥 Import File (Excel/CSV)
@@ -207,6 +236,22 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
 });
 
 export default SpreadsheetToolbar;
+
+const jumpBtnStyle: React.CSSProperties = {
+  padding: '9px 15px',
+  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+  color: '#ffffff',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  fontSize: '13px',
+  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+  transition: 'all 0.2s ease',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+};
 
 const importBtnStyle: React.CSSProperties = {
   padding: '9px 16px',

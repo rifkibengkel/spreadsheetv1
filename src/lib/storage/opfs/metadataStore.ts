@@ -4,16 +4,22 @@
  */
 
 import { OPFS_META_FILE, OPFSMetadata, OPFS_MAGIC_V1 } from './types';
+import { getIDBDirectoryHandle } from './idbFallback';
 
 export class MetadataStore {
   /**
-   * Retrieves the OPFS root directory handle.
+   * Retrieves the OPFS root directory handle, with transparent IndexedDB
+   * fallback for environments where navigator.storage.getDirectory is unsupported.
    */
   public static async getRootDir(): Promise<FileSystemDirectoryHandle> {
-    if (typeof navigator === 'undefined' || !navigator.storage?.getDirectory) {
-      throw new Error('OPFS (navigator.storage.getDirectory) is not supported in this environment.');
+    if (typeof navigator !== 'undefined' && navigator.storage?.getDirectory) {
+      try {
+        return await navigator.storage.getDirectory();
+      } catch (err) {
+        console.warn('[Storage] Native OPFS getDirectory failed, falling back to IDB virtual storage:', err);
+      }
     }
-    return await navigator.storage.getDirectory();
+    return (await getIDBDirectoryHandle()) as any;
   }
 
   /**

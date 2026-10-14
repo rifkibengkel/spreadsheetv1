@@ -9,6 +9,10 @@ export class RowIndex {
    * Serializes an array of BigInt offsets into a little-endian Uint8Array buffer.
    */
   public static serialize(offsets: BigUint64Array | bigint[]): Uint8Array {
+    if (offsets instanceof BigUint64Array) {
+      return new Uint8Array(offsets.buffer, offsets.byteOffset, offsets.byteLength);
+    }
+
     const count = offsets.length;
     const buffer = new ArrayBuffer(count * 8);
     const view = new DataView(buffer);

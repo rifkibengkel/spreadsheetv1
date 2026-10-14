@@ -34,19 +34,32 @@ export async function exportWorkbookToExcel(
   logMemory("START");
 
   // Step 1: Force active cell editing commit
+  if (
+    typeof document !== "undefined" &&
+    document.activeElement &&
+    typeof (document.activeElement as HTMLElement).blur === "function"
+  ) {
+    (document.activeElement as HTMLElement).blur();
+  }
   try {
     const sheet = api.getActiveWorkbook
       ? api.getActiveWorkbook().getActiveSheet()
       : null;
     if (sheet && sheet.endEditing) {
       sheet.endEditing();
-    } else if (api.getCommandService) {
-      api
-        .getCommandService()
-        .syncExecuteCommand("sheet.command.set-cell-edit-visible", {
-          active: false,
-          save: true,
-        });
+    }
+    const cmd = api?.getCommandService
+      ? api.getCommandService()
+      : api?._commandService;
+    if (cmd) {
+      cmd.syncExecuteCommand?.("sheet.operation.set-cell-edit-visible", {
+        visible: false,
+        eventType: 0,
+      });
+      cmd.syncExecuteCommand?.("sheet.command.set-cell-edit-visible", {
+        active: false,
+        save: true,
+      });
     }
   } catch (e) {
     console.warn("[EXPORT] endEdit warning:", e);
@@ -366,9 +379,19 @@ export async function exportWorkbookToExcel(
                 (fWorksheet as any)?.getConfig?.();
 
           const cellDataRaw = sData?.cellData || {};
-          const rowKeys = Object.keys(cellDataRaw)
-            .map(Number)
-            .sort((a, b) => a - b);
+          const matrix = coreWorksheet?.getCellMatrix
+            ? coreWorksheet.getCellMatrix()
+            : fWorksheet?.getSheet?.()?.getCellMatrix?.() ||
+              (fWorksheet as any)?.getCellMatrix?.();
+          const liveMatrix =
+            matrix?.getMatrix ? matrix.getMatrix() : (matrix as any)?._matrix || null;
+
+          // Gather complete union of rows from stale snapshot AND live matrix
+          const allRowKeysSet = new Set<number>([
+            ...Object.keys(cellDataRaw).map(Number),
+            ...(liveMatrix ? Object.keys(liveMatrix).map(Number) : []),
+          ]);
+          const rowKeys = Array.from(allRowKeysSet).sort((a, b) => a - b);
           const totalRows = rowKeys.length;
 
           console.log(
@@ -395,39 +418,44 @@ export async function exportWorkbookToExcel(
 
             // Materialize slice for this chunk only
             const chunkRows: Record<number, Record<number, any>> = {};
-            const matrix = coreWorksheet?.getCellMatrix
-              ? coreWorksheet.getCellMatrix()
-              : fWorksheet?.getSheet?.()?.getCellMatrix?.() ||
-                (fWorksheet as any)?.getCellMatrix?.();
 
             for (let r = start; r < end; r++) {
               const rowIndex = rowKeys[r];
-              if (cellDataRaw[rowIndex]) {
-                const rowObj: Record<number, any> = {
-                  ...cellDataRaw[rowIndex],
-                };
-                if (matrix) {
-                  const colKeys = Object.keys(rowObj);
-                  for (let colIdx = 0; colIdx < colKeys.length; colIdx++) {
-                    const colIndex = parseInt(colKeys[colIdx], 10);
-                    const cell = rowObj[colIndex];
-                    if (cell && (cell.f || cell.si !== undefined)) {
-                      const liveCell = matrix.getValue(rowIndex, colIndex);
-                      if (
-                        liveCell &&
-                        liveCell.v !== undefined &&
-                        liveCell.v !== null
-                      ) {
-                        rowObj[colIndex] = {
-                          ...cell,
-                          v: liveCell.v,
-                          t: liveCell.t,
-                        };
-                      }
+              const rawRow = cellDataRaw[rowIndex] || {};
+              const liveRow = liveMatrix ? liveMatrix[rowIndex] : null;
+
+              if (rawRow || liveRow) {
+                const allColKeysSet = new Set<number>([
+                  ...Object.keys(rawRow).map(Number),
+                  ...(liveRow ? Object.keys(liveRow).map(Number) : []),
+                ]);
+                const colKeys = Array.from(allColKeysSet).sort((a, b) => a - b);
+                const rowObj: Record<number, any> = {};
+
+                for (const colIndex of colKeys) {
+                  // Live cell from matrix is authoritative
+                  const liveCell = matrix?.getValue
+                    ? matrix.getValue(rowIndex, colIndex)
+                    : liveRow?.[colIndex];
+                  const rawCell = rawRow[colIndex];
+
+                  if (liveCell !== undefined && liveCell !== null) {
+                    const merged = rawCell ? { ...rawCell, ...liveCell } : { ...liveCell };
+                    if (liveCell.v !== undefined) {
+                      merged.v = liveCell.v;
                     }
+                    if (liveCell.t !== undefined) {
+                      merged.t = liveCell.t;
+                    }
+                    rowObj[colIndex] = merged;
+                  } else if (!liveMatrix && rawCell !== undefined && rawCell !== null) {
+                    rowObj[colIndex] = { ...rawCell };
                   }
                 }
-                chunkRows[rowIndex] = rowObj;
+
+                if (Object.keys(rowObj).length > 0) {
+                  chunkRows[rowIndex] = rowObj;
+                }
               }
             }
 

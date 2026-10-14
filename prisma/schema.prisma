@@ -73,6 +73,7 @@ model User {
   jobs            JobRecord[]
   createdVersions WorkbookVersion[]
   mutationBatches MutationBatch[]
+  ownedDatasets   Dataset[]            @relation("DatasetOwner")
 
   @@index([email])
   @@index([username])
@@ -325,3 +326,105 @@ model CalculationResult {
   @@index([workbookId, calculatedRev])
   @@map("calculation_results")
 }
+
+// ------------------------------------------------------------------------------
+// LARGE CSV 2M-ROW PARTITION ARCHITECTURE (PHASE 1A)
+// ------------------------------------------------------------------------------
+
+enum DatasetStatus {
+  UPLOADING
+  UPLOADED
+  QUEUED
+  PARSING
+  PARTITIONING
+  INDEXING
+  VERIFYING
+  READY
+  FAILED
+  CANCELLED
+  RECOVERING
+}
+
+enum PartitionStatus {
+  PENDING
+  WRITING
+  VALIDATING
+  READY
+  FAILED
+}
+
+model Dataset {
+  id               String        @id @default(uuid()) @db.Uuid
+  ownerId          String?       @map("owner_id") @db.Uuid
+  name             String        @db.VarChar(255)
+  originalFilename String        @map("original_filename") @db.VarChar(255)
+  byteSize         BigInt        @map("byte_size")
+  expectedChecksum String?       @map("expected_checksum") @db.VarChar(64)
+  actualChecksum   String?       @map("actual_checksum") @db.VarChar(64)
+  rowCount         BigInt        @default(0) @map("row_count")
+  columnCount      Int           @default(0) @map("column_count")
+  delimiter        String        @default(",") @db.VarChar(10)
+  hasHeader        Boolean       @default(true) @map("has_header")
+  headerRow        Json?         @map("header_row") @db.JsonB
+  status           DatasetStatus @default(UPLOADING)
+  progress         Float         @default(0.0)
+  currentStage     String?       @map("current_stage") @db.VarChar(50)
+  spoolPath        String?       @map("spool_path") @db.VarChar(512)
+  storageDir       String?       @map("storage_dir") @db.VarChar(512)
+  errorMessage     String?       @map("error_message") @db.Text
+  metadata         Json?         @db.JsonB
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  completedAt      DateTime?     @map("completed_at") @db.Timestamptz
+
+  owner            User?              @relation("DatasetOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  partitions       DatasetPartition[]
+  uploadChunks     UploadChunk[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("datasets")
+}
+
+model DatasetPartition {
+  id              String          @id @default(uuid()) @db.Uuid
+  datasetId       String          @map("dataset_id") @db.Uuid
+  partitionNumber Int             @map("partition_number")
+  stableRowStart  BigInt          @map("stable_row_start")
+  stableRowEnd    BigInt          @map("stable_row_end")
+  rowCount        Int             @map("row_count")
+  dataFilePath    String          @map("data_file_path") @db.VarChar(512)
+  indexFilePath   String          @map("index_file_path") @db.VarChar(512)
+  byteSize        BigInt          @map("byte_size")
+  checksum        String?         @db.VarChar(64)
+  status          PartitionStatus @default(PENDING)
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  completedAt     DateTime?       @map("completed_at") @db.Timestamptz
+
+  dataset         Dataset         @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@unique([datasetId, partitionNumber])
+  @@index([datasetId, status])
+  @@index([datasetId, stableRowStart, stableRowEnd])
+  @@map("dataset_partitions")
+}
+
+model UploadChunk {
+  id             String   @id @default(uuid()) @db.Uuid
+  datasetId      String   @map("dataset_id") @db.Uuid
+  chunkIndex     Int      @map("chunk_index")
+  byteOffset     BigInt   @map("byte_offset")
+  byteLength     Int      @map("byte_length")
+  checksumSha256 String   @map("checksum_sha256") @db.VarChar(64)
+  isCommitted    Boolean  @default(true) @map("is_committed")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  dataset        Dataset  @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@unique([datasetId, chunkIndex])
+  @@unique([datasetId, byteOffset])
+  @@index([datasetId])
+  @@map("upload_chunks")
+}
+

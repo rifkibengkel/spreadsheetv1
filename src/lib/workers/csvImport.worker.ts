@@ -191,7 +191,8 @@ self.onmessage = async (e: MessageEvent) => {
     const totalOffsetsCount = offsetBlocks.reduce((sum, b) => sum + b.length, 0);
     const finalIndexArray = new BigUint64Array(totalOffsetsCount);
     let copyPos = 0;
-    for (const b of offsetBlocks) {
+    while (offsetBlocks.length > 0) {
+      const b = offsetBlocks.shift()!;
       finalIndexArray.set(b, copyPos);
       copyPos += b.length;
     }

@@ -144,6 +144,14 @@ export class DatasetReader {
     return this.metadata ? this.metadata.headers : [];
   }
 
+  public getDataFile(): File | null {
+    return this.dataFile;
+  }
+
+  public getIndexArray(): BigUint64Array | null {
+    return this.indexArray;
+  }
+
   /**
    * Reads a single row by 0-based data row index.
    */

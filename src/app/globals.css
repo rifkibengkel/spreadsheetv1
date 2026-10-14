@@ -1,75 +1,66 @@
 :root {
-  --background-start: #0f172a;
-  --background-end: #1e293b;
-  --text-color: #f8fafc;
-  --accent-color: #38bdf8;
-  --panel-bg: rgba(255, 255, 255, 0.05);
-  --border-color: rgba(255, 255, 255, 0.1);
+  --bg-app: #0b0f19;
+  --bg-header: #0f172a;
+  --border-header: #1e293b;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
 }
 
-body {
+* {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: linear-gradient(135deg, var(--background-start), var(--background-end));
-  color: var(--text-color);
-  min-height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 main {
   display: flex;
   flex-direction: column;
+  width: 100vw;
   height: 100vh;
-  padding: 1.25rem;
-  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .univer-wrapper {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  height: 100%;
-  min-height: 550px;
-  gap: 1rem;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-app);
 }
 
-.univer-header {
-  text-align: center;
-}
-
-.univer-header h1 {
-  margin: 0;
-  font-size: 2.2rem;
-  font-weight: 700;
-  background: linear-gradient(to right, #38bdf8, #818cf8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -0.05em;
-}
-
-.univer-header p {
-  margin: 0.25rem 0 0;
-  color: #94a3b8;
-  font-size: 1rem;
-}
-
-/* GPU Composite Layer Isolation for Ultra-Fast Sheet Switching & Scroll */
+/* Seamless Full-Viewport Univer Canvas */
 .univer-container-outer {
   flex: 1;
   display: flex;
   flex-direction: column;
   position: relative;
-  height: 100%;
-  min-height: 500px;
-  background: var(--panel-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
+  width: 100%;
+  height: calc(100vh - 52px);
+  min-height: 0;
+  background: #ffffff;
+  border-top: 1px solid var(--border-header);
   overflow: hidden;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
   transform: translateZ(0);
-  will-change: transform;
 }
 
 .univer-container-inner {
@@ -77,11 +68,48 @@ main {
   flex: 1;
   width: 100%;
   height: 100%;
-  min-height: 480px;
-  border-radius: 8px;
+  min-height: 0;
+  border-radius: 0;
   overflow: hidden;
   background: #ffffff;
   transform: translateZ(0);
   backface-visibility: hidden;
-  contain: content;
 }
+
+/* Lazy Load Animations */
+@keyframes shimmer-lazy {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-lazy {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(0.995);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-shimmer-lazy {
+  background: linear-gradient(90deg, #0284c7 0%, #6366f1 50%, #10b981 100%);
+  background-size: 200% 100%;
+  animation: shimmer-lazy 2s infinite linear;
+}
+
+

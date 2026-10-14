@@ -15,8 +15,10 @@ import {
   IUniverInstanceService,
   CommandType,
   RANGE_TYPE,
+  Range,
 } from "@univerjs/core";
 import { SheetsFilterService } from "@univerjs/sheets-filter";
+import { StatusBarController } from "@univerjs/sheets-ui";
 
 // ==============================================================================
 // UNIVER PASSIVATION & CALCULATION SUPPRESSION (PHASE 4)
@@ -37,6 +39,9 @@ export interface PassivationController {
 export function installUniverCalculationPassivation(
   injector: any,
 ): PassivationController {
+  installRangeGetValueOptimization();
+  installStatusBarOptimization();
+
   if (!injector) {
     console.warn(
       "[UNIVER_PASSIVATION] Injector not provided, skipping passivation",
@@ -593,12 +598,128 @@ export function installRowHeightCommandInterception(injector: any): boolean {
   }
 }
 
+let isRangeOptimizationInstalled = false;
+let isStatusBarOptimizationInstalled = false;
+
+/**
+ * Optimizes Range.prototype.getValue() to an O(1) direct top-left cell lookup.
+ * Eliminates pathological O(R x C) 2D array allocations from Univer's default getValues()[0][0].
+ * Leaves Range.prototype.getValues() completely untouched.
+ */
+export function installRangeGetValueOptimization(): void {
+  if (isRangeOptimizationInstalled) return;
+  try {
+    if (Range?.prototype && !(Range.prototype as any).__o1GetValueInstalled) {
+      (Range.prototype as any).__o1GetValueInstalled = true;
+      Range.prototype.getValue = function () {
+        const range = (this as any)._range;
+        if (!range) return null;
+        if (range.endRow < range.startRow || range.endColumn < range.startColumn) return null;
+        const worksheet = (this as any)._worksheet;
+        if (!worksheet) return null;
+        const cellMatrix = worksheet.getCellMatrix();
+        return cellMatrix ? (cellMatrix.getValue(range.startRow, range.startColumn) || null) : null;
+      };
+      isRangeOptimizationInstalled = true;
+      console.log("[RANGE_OPT] Successfully installed Range.prototype.getValue O(1) top-left cell optimization");
+    }
+  } catch (err) {
+    console.warn("[RANGE_OPT] Failed to install Range.prototype.getValue optimization:", err);
+  }
+}
+
+/**
+ * Optimizes StatusBarController.prototype._calculateSelection for full-column virtual dataset selections.
+ * Bypasses pathological 4M/62M synchronous row iterations.
+ * Reports true COUNTA using datasetRowCount. Omits COUNT if exact runtime numeric metadata is unavailable.
+ */
+export function installStatusBarOptimization(): void {
+  if (isStatusBarOptimizationInstalled) return;
+  try {
+    if (
+      StatusBarController?.prototype &&
+      !(StatusBarController.prototype as any).__datasetAwareCalculationInstalled
+    ) {
+      (StatusBarController.prototype as any).__datasetAwareCalculationInstalled = true;
+      const originalCalculateSelection = (StatusBarController.prototype as any)._calculateSelection;
+
+      (StatusBarController.prototype as any)._calculateSelection = function (
+        selections: any[],
+        primary: any
+      ) {
+        try {
+          const reader = typeof window !== "undefined" ? (window as any).__datasetReader : null;
+          const datasetRowCount = reader?.getRowCount?.() || 0;
+
+          if (
+            datasetRowCount > 0 &&
+            Array.isArray(selections) &&
+            selections.length === 1
+          ) {
+            const selection = selections[0];
+            const startRow = selection.startRow;
+            const endRow = selection.endRow;
+            const startColumn = selection.startColumn;
+            const endColumn = selection.endColumn;
+            const numCols = Math.max(1, endColumn - startColumn + 1);
+
+            const isFullColumn =
+              startRow === 0 &&
+              (selection.rangeType === RANGE_TYPE.COLUMN ||
+                selection.rangeType === RANGE_TYPE.ALL ||
+                endRow >= 10000);
+
+            if (isFullColumn) {
+              const meta = reader.getMetadata?.();
+              const colStats = numCols === 1 ? (meta as any)?.columnStats?.[startColumn] : null;
+
+              const values: Array<{ func: string; value: number }> = [
+                {
+                  func: "COUNTA",
+                  value: datasetRowCount * numCols,
+                },
+              ];
+
+              if (typeof colStats?.count === "number") {
+                values.push({
+                  func: "COUNT",
+                  value: colStats.count,
+                });
+              }
+
+              const newState = {
+                values,
+                pattern: null,
+              };
+
+              (this as any)._statusBarService.setState(newState);
+              return;
+            }
+          }
+        } catch {
+          // Fall back gracefully
+        }
+
+        return originalCalculateSelection.call(this, selections, primary);
+      };
+
+      isStatusBarOptimizationInstalled = true;
+      console.log("[STATUS_BAR_OPT] Successfully installed StatusBarController full-column dataset-aware optimization");
+    }
+  } catch (err) {
+    console.warn("[STATUS_BAR_OPT] Failed to install StatusBarController optimization:", err);
+  }
+}
+
 /**
  * Installs enterprise SheetSkeleton layout caching and accumulation optimization.
  * Neutralizes main-thread blocking during rapid row/column resizing on large (4M+ rows) sheets.
  * Guarantees 100% semantic identity and strictly isolates cache per SheetSkeleton instance.
  */
 export function installSheetSkeletonOptimization(injector?: any): void {
+  installRangeGetValueOptimization();
+  installStatusBarOptimization();
+
   if (injector && !isCommandInterceptionInstalled) {
     installRowHeightCommandInterception(injector);
   }

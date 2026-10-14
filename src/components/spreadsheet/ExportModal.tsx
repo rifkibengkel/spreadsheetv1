@@ -1,141 +1,227 @@
-import React, { useState } from 'react';
-import { exportWorkbookToExcel } from '@/lib/export/excel';
-import { exportActiveSheetToCSV } from '@/lib/export/csv';
+import React, { useState } from "react";
+import { exportWorkbookToExcel } from "@/lib/export/excel";
+import {
+  exportActiveSheetToCSV,
+  triggerServerDatasetCsvDownload,
+  saveServerDatasetCsvToDesktop,
+} from "@/lib/export/csv";
 
 interface ExportModalProps {
   univerAPI: any;
   onClose: () => void;
   activeFileName?: string;
-  activeFileFormat?: 'xlsx' | 'csv';
+  activeFileFormat?: "xlsx" | "csv";
+  datasetId?: string | null;
+  datasetRowCount?: number;
+  activeQuery?: {
+    queryId: string;
+    matchedRows: number;
+    description?: string;
+  } | null;
 }
 
-export default function ExportModal({ univerAPI, onClose, activeFileName, activeFileFormat = 'xlsx' }: ExportModalProps) {
-  const [format, setFormat] = useState<'xlsx' | 'csv'>(activeFileFormat);
-  const [filenameInput, setFilenameInput] = useState(() => activeFileName || `workbook-export.${activeFileFormat}`);
-  const [loading, setLoading] = useState(false);
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [progressMessage, setProgressMessage] = useState('');
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+const ROWS_PER_LOGICAL_SHEET = 4_000_000;
 
-  // Update extension if user changes format manually
-  const handleFormatChange = (newFormat: 'xlsx' | 'csv') => {
-    setFormat(newFormat);
-    const baseName = filenameInput.substring(0, filenameInput.lastIndexOf('.')) || filenameInput;
-    setFilenameInput(`${baseName}.${newFormat}`);
-  };
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
 
-  // const getExportBlob = async (onProgress: (percent: number, msg: string) => void): Promise<{ blob: Blob; targetName: string }> => {
-  //   let blob: Blob;
-  //   let targetName = filenameInput.trim();
-    
-  //   if (!targetName.endsWith(`.${format}`)) {
-  //     targetName += `.${format}`;
-  //   }
-    
-  //   console.log(targetName,"LUAAR TARGET");
-  //   console.log(format,"FORMAAT");
-    
-  //   if (format === 'xlsx') {
-  //     blob = await exportWorkbookToExcel(univerAPI, onProgress);
-  //     console.log(blob,"DALEMM");
-  //   } else {
-  //     blob = await exportActiveSheetToCSV(univerAPI, onProgress);
-  //     console.log(blob,"DALEMM2");
-  //   }
-
-  //   return { blob, targetName };
-  // };
-
-function sanitizeExportFilename(rawInput: string, format: 'xlsx' | 'csv'): string {
-  let clean = (rawInput || '').trim();
+function sanitizeExportFilename(
+  rawInput: string,
+  format: "xlsx" | "csv",
+): string {
+  let clean = (rawInput || "").trim();
 
   // Strip illegal Windows filesystem characters and control characters
-  clean = clean.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+  clean = clean.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_");
 
   // Strip trailing spaces and dots (invalid on Windows filesystem)
-  clean = clean.replace(/[. ]+$/, '');
+  clean = clean.replace(/[. ]+$/, "");
 
   // Strip existing extension matching target format (case-insensitive)
-  const extRegex = new RegExp(`\\.${format}$`, 'i');
-  clean = clean.replace(extRegex, '');
+  const extRegex = new RegExp(`\\.${format}$`, "i");
+  clean = clean.replace(extRegex, "");
 
-  if (!clean || clean.trim() === '') {
+  if (!clean || clean.trim() === "") {
     clean = `workbook-export-${Date.now()}`;
   }
 
   return `${clean}.${format}`;
 }
 
-const getExportBlob = async (
-  onProgress: (percent: number, msg: string) => void
-): Promise<{ blob: Blob; targetName: string }> => {
-  let blob: Blob;
-  const targetName = sanitizeExportFilename(filenameInput, format);
+export default function ExportModal({
+  univerAPI,
+  onClose,
+  activeFileName,
+  activeFileFormat = "xlsx",
+  datasetId,
+  datasetRowCount,
+  activeQuery,
+}: ExportModalProps) {
+  const [format, setFormat] = useState<"xlsx" | "csv">(activeFileFormat);
+  const [filenameInput, setFilenameInput] = useState(
+    () => activeFileName || `workbook-export.${activeFileFormat}`,
+  );
+  const [loading, setLoading] = useState(false);
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  console.log('[EXPORT MODAL] Sanitized target name:', targetName);
-  console.log('[EXPORT MODAL] Format:', format);
-  console.log('[EXPORT MODAL] univerAPI exists:', !!univerAPI);
+  // Determine active virtual sheet controller (Server or OPFS) and partition information
+  const serverController =
+    typeof window !== "undefined"
+      ? (window as any).__datasetViewportController
+      : null;
+  const opfsController =
+    typeof window !== "undefined"
+      ? (window as any).__viewportController
+      : null;
+  const controller = serverController || opfsController;
+  const effectiveDatasetId = datasetId || (serverController as any)?.datasetId || null;
+  const totalRows =
+    datasetRowCount ||
+    (serverController?.getTotalRows ? serverController.getTotalRows() : 0) ||
+    opfsController?.getMetadata?.()?.rowCount ||
+    0;
+  const activeSheetIndex = controller?.getActiveSheetIndex
+    ? controller.getActiveSheetIndex()
+    : 0;
 
-  if (format === 'xlsx') {
-    console.log('[EXPORT MODAL] BEFORE exportWorkbookToExcel');
+  const isVirtualDataset = !!(serverController || opfsController || effectiveDatasetId || totalRows > 0);
+  const hasVirtualSheets = totalRows > ROWS_PER_LOGICAL_SHEET;
+  const virtualSheetCount = hasVirtualSheets
+    ? Math.max(1, Math.ceil(totalRows / ROWS_PER_LOGICAL_SHEET))
+    : 1;
 
-    blob = await exportWorkbookToExcel(univerAPI, (percent, msg) => {
-      console.log('[EXPORT MODAL] Progress:', percent, msg);
-      onProgress(percent, msg);
+  // Compute rows for each virtual sheet (or use controller partitions if available)
+  const sheetPartitions: Array<{
+    index: number;
+    name: string;
+    rowCount: number;
+  }> = [];
+  const existingPartitions: any[] = controller?.getPartitions?.() || [];
+  if (existingPartitions.length > 0) {
+    existingPartitions.forEach((part: any) => {
+      sheetPartitions.push({
+        index: part.sheetIndex,
+        name: part.name || `Sheet ${part.sheetIndex + 1}`,
+        rowCount: part.rowCount,
+      });
     });
-
-    console.log('[EXPORT MODAL] AFTER exportWorkbookToExcel');
-    console.log('[EXPORT MODAL] Blob size:', blob?.size);
-    console.log('[EXPORT MODAL] Blob type:', blob?.type);
   } else {
-    console.log('[EXPORT MODAL] BEFORE exportActiveSheetToCSV');
-
-    blob = await exportActiveSheetToCSV(univerAPI, (percent, msg) => {
-      console.log('[EXPORT MODAL] Progress:', percent, msg);
-      onProgress(percent, msg);
-    });
-
-    console.log('[EXPORT MODAL] AFTER exportActiveSheetToCSV');
-    console.log('[EXPORT MODAL] Blob size:', blob?.size);
-    console.log('[EXPORT MODAL] Blob type:', blob?.type);
+    for (let s = 0; s < virtualSheetCount; s++) {
+      const sStart = s * ROWS_PER_LOGICAL_SHEET;
+      const sEnd = Math.min(totalRows - 1, (s + 1) * ROWS_PER_LOGICAL_SHEET - 1);
+      const rCount = Math.max(0, sEnd - sStart + 1);
+      sheetPartitions.push({
+        index: s,
+        name: `Sheet ${s + 1}`,
+        rowCount: rCount,
+      });
+    }
   }
 
-  console.log('[EXPORT MODAL] Returning blob with filename:', targetName);
+  const [csvScopeSelection, setCsvScopeSelection] = useState<string>("current");
 
-  return { blob, targetName };
-};
+  // Update extension if user changes format manually
+  const handleFormatChange = (newFormat: "xlsx" | "csv") => {
+    setFormat(newFormat);
+    const baseName =
+      filenameInput.substring(0, filenameInput.lastIndexOf(".")) ||
+      filenameInput;
+    setFilenameInput(`${baseName}.${newFormat}`);
+  };
+
+  const resolveScopeAndSheetIndex = (): {
+    scope: "sheet" | "all";
+    sheetIndex: number;
+  } => {
+    if (csvScopeSelection === "all") {
+      return { scope: "all", sheetIndex: 0 };
+    }
+    if (csvScopeSelection === "current") {
+      return { scope: "sheet", sheetIndex: activeSheetIndex };
+    }
+    if (csvScopeSelection.startsWith("sheet-")) {
+      const idx = parseInt(csvScopeSelection.split("-")[1], 10);
+      return { scope: "sheet", sheetIndex: isNaN(idx) ? 0 : idx };
+    }
+    return { scope: "sheet", sheetIndex: activeSheetIndex };
+  };
 
   const handleDownload = async () => {
-    if (!univerAPI) return;
+    if (!univerAPI && !effectiveDatasetId) return;
     setLoading(true);
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
     setProgressPercent(0);
-    setProgressMessage('Menyiapkan file untuk diekspor...');
+    setProgressMessage("Menyiapkan file untuk diekspor...");
+
+    const targetName = sanitizeExportFilename(filenameInput, format);
 
     try {
-      const { blob, targetName } = await getExportBlob((percent, msg) => {
-        setProgressPercent(percent);
-        setProgressMessage(msg);
-      });
+      // 1. Server-backed Dataset CSV Streaming Export (Zero JS heap overhead)
+      if (format === "csv" && effectiveDatasetId) {
+        const { scope, sheetIndex } = resolveScopeAndSheetIndex();
+        setProgressPercent(25);
+        setProgressMessage("Menyiapkan streaming data CSV dari server...");
+
+        await new Promise((r) => setTimeout(r, 200));
+        setProgressPercent(75);
+        setProgressMessage("Memulai pengunduhan file CSV...");
+
+        triggerServerDatasetCsvDownload({
+          datasetId: effectiveDatasetId,
+          scope,
+          sheetIndex,
+          queryId: activeQuery?.queryId,
+          filename: targetName,
+        });
+
+        setProgressPercent(100);
+        setProgressMessage("✓ Pengunduhan berhasil dimulai di browser!");
+        setTimeout(onClose, 1200);
+        return;
+      }
+
+      // 2. XLSX or In-Memory Sheet Export via Web Worker Blob
+      let blob: Blob;
+      if (format === "xlsx") {
+        blob = await exportWorkbookToExcel(univerAPI, (percent, msg) => {
+          setProgressPercent(percent);
+          setProgressMessage(msg);
+        });
+      } else {
+        const { scope, sheetIndex } = resolveScopeAndSheetIndex();
+        blob = await exportActiveSheetToCSV(
+          univerAPI,
+          (percent, msg) => {
+            setProgressPercent(percent);
+            setProgressMessage(msg);
+          },
+          { scope, sheetIndex }
+        );
+      }
 
       setProgressPercent(95);
-      setProgressMessage('Menyiapkan file Excel untuk diunduh...');
+      setProgressMessage("Menyiapkan file untuk diunduh...");
 
-      // Native Client-Side Download: 0ms, 0 network requests, immune to socket exhaustion!
-      // Uses File object + a.download to guarantee the exact filename and .xlsx extension.
-      // 120s URL lifetime ensures Edge/Chrome download manager never falls back to UUID.
-      const mimeType = format === 'xlsx'
-        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        : 'text/csv;charset=utf-8;';
+      const mimeType =
+        format === "xlsx"
+          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          : "text/csv;charset=utf-8;";
       const file = new File([blob], targetName, {
         type: mimeType,
         lastModified: Date.now(),
       });
       const url = URL.createObjectURL(file);
-      const a = document.createElement('a');
-      a.style.display = 'none';
+      const a = document.createElement("a");
+      a.style.display = "none";
       a.href = url;
       a.download = targetName;
       document.body.appendChild(a);
@@ -147,73 +233,136 @@ const getExportBlob = async (
             document.body.removeChild(a);
           }
           URL.revokeObjectURL(url);
-        } catch (cleanupErr) {
-          console.warn('[EXPORT] Cleanup warning:', cleanupErr);
-        }
+        } catch {}
       }, 120000);
 
-      console.log('[EXPORT][T9] EXPORT_COMPLETE: Download initiated successfully');
       setProgressPercent(100);
-      setProgressMessage('✓ Pengunduhan selesai!');
+      setProgressMessage("✓ Pengunduhan selesai!");
       setTimeout(onClose, 1000);
     } catch (e: any) {
-      setError(e.message || 'Export failed.');
+      console.error("[EXPORT MODAL] Export failed:", e);
+      setError(e.message || "Ekspor gagal.");
       setLoading(false);
     }
   };
 
   const handleSaveToDesktop = async () => {
-    if (!univerAPI) return;
+    if (!univerAPI && !effectiveDatasetId) return;
     setLoading(true);
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
     setProgressPercent(0);
-    setProgressMessage('Menyiapkan proses simpan data...');
+    setProgressMessage("Menyiapkan proses simpan ke Desktop...");
+
+    const targetName = sanitizeExportFilename(filenameInput, format);
 
     try {
-      const { blob, targetName } = await getExportBlob((percent, msg) => {
-        setProgressPercent(percent);
-        setProgressMessage(msg);
-      });
+      // 1. Server-backed Dataset direct filesystem save (Fast, zero 50MB HTTP upload limit)
+      if (format === "csv" && effectiveDatasetId) {
+        const { scope, sheetIndex } = resolveScopeAndSheetIndex();
+        setProgressPercent(20);
+        setProgressMessage("Menghubungi server untuk ekspor dataset...");
 
-      setProgressPercent(92);
-      setProgressMessage('Mengirim file ke Desktop...');
+        const result = await saveServerDatasetCsvToDesktop({
+          datasetId: effectiveDatasetId,
+          scope,
+          sheetIndex,
+          queryId: activeQuery?.queryId,
+          filename: targetName,
+        });
+
+        setProgressPercent(100);
+        setProgressMessage("✓ Berhasil disimpan ke Desktop!");
+        setSuccessMessage(
+          `✓ Disimpan ke Desktop: ${result.filename} (${result.rowCount.toLocaleString()} baris)`,
+        );
+        setLoading(false);
+        setTimeout(onClose, 1600);
+        return;
+      }
+
+      // 2. XLSX or In-Memory Sheet via /api/desktop/save
+      let blob: Blob;
+      if (format === "xlsx") {
+        blob = await exportWorkbookToExcel(univerAPI, (percent, msg) => {
+          setProgressPercent(percent);
+          setProgressMessage(msg);
+        });
+      } else {
+        const { scope, sheetIndex } = resolveScopeAndSheetIndex();
+        blob = await exportActiveSheetToCSV(
+          univerAPI,
+          (percent, msg) => {
+            setProgressPercent(percent);
+            setProgressMessage(msg);
+          },
+          { scope, sheetIndex }
+        );
+      }
+
+      setProgressPercent(90);
+      setProgressMessage("Mengirim file ke Desktop...");
 
       const formData = new FormData();
-      formData.append('file', blob, targetName);
-      formData.append('filename', targetName);
+      formData.append("file", blob, targetName);
+      formData.append("filename", targetName);
 
-      const res = await fetch('/api/desktop/save', {
-        method: 'POST',
+      const res = await fetch("/api/desktop/save", {
+        method: "POST",
         body: formData,
       });
 
       const data = await res.json();
       if (!res.ok || data.error) {
-        throw new Error(data.error || 'Failed to save to Desktop.');
+        throw new Error(data.error || "Gagal menyimpan ke Desktop.");
       }
 
       setProgressPercent(100);
-      setProgressMessage('✓ Berhasil disimpan ke Desktop!');
-      setSuccessMessage(`Berhasil disimpan ke Desktop: ${data.filePath || targetName}`);
+      setProgressMessage("✓ Berhasil disimpan ke Desktop!");
+      setSuccessMessage(
+        `✓ Berhasil disimpan ke Desktop: ${data.filePath || targetName}`,
+      );
       setLoading(false);
       setTimeout(onClose, 1500);
     } catch (e: any) {
-      setError(e.message || 'Save to Desktop failed.');
+      console.error("[EXPORT MODAL] Save to Desktop failed:", e);
+      setError(e.message || "Gagal menyimpan ke Desktop.");
       setLoading(false);
     }
   };
 
+  const activePartitionInfo =
+    sheetPartitions[activeSheetIndex] || sheetPartitions[0];
+
   return (
     <div id="export-modal-overlay" style={overlayStyle}>
       <div style={modalStyle}>
-        <h2 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>Ekspor & Simpan Data</h2>
-        <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '16px', lineHeight: '1.4' }}>
-          Simpan perubahan spreadsheet ke Desktop atau unduh sebagai file Excel / CSV.
+        <h2 style={{ margin: "0 0 8px 0", fontSize: "20px" }}>
+          Ekspor & Simpan Data
+        </h2>
+        <p
+          style={{
+            color: "#94a3b8",
+            fontSize: "13px",
+            marginBottom: "16px",
+            lineHeight: "1.4",
+          }}
+        >
+          Simpan data spreadsheet ke Desktop atau unduh langsung sebagai file
+          Excel / CSV.
         </p>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 'bold' }}>Nama File:</label>
+        <div style={{ marginBottom: "14px" }}>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "6px",
+              fontSize: "13px",
+              fontWeight: "bold",
+            }}
+          >
+            Nama File:
+          </label>
           <input
             type="text"
             value={filenameInput}
@@ -222,51 +371,209 @@ const getExportBlob = async (
             style={inputStyle}
           />
         </div>
-        
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 'bold' }}>Format File:</label>
-          <select 
-            value={format} 
+
+        <div style={{ marginBottom: "16px" }}>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "6px",
+              fontSize: "13px",
+              fontWeight: "bold",
+            }}
+          >
+            Format File:
+          </label>
+          <select
+            id="export-format-select"
+            value={format}
             onChange={(e) => handleFormatChange(e.target.value as any)}
             style={selectStyle}
             disabled={loading}
           >
             <option value="xlsx">Excel Workbook (.xlsx)</option>
-            <option value="csv">Active Sheet as CSV (.csv)</option>
+            <option value="csv">CSV Spreadsheet (.csv)</option>
           </select>
         </div>
 
+        {/* CSV Scope Selection for Partitioned/Virtual Datasets */}
+        {format === "csv" && isVirtualDataset && sheetPartitions.length > 0 && (
+          <div
+            style={{
+              marginBottom: "16px",
+              background: "#0f172a",
+              padding: "12px",
+              borderRadius: "8px",
+              border: "1px solid #334155",
+            }}
+          >
+            <label
+              style={{
+                display: "block",
+                marginBottom: "6px",
+                fontSize: "13px",
+                fontWeight: "bold",
+                color: "#38bdf8",
+              }}
+            >
+              Cakupan Ekspor CSV:
+            </label>
+            <select
+              id="export-csv-scope-select"
+              value={csvScopeSelection}
+              onChange={(e) => setCsvScopeSelection(e.target.value)}
+              style={selectStyle}
+              disabled={loading}
+            >
+              <option value="current">
+                Sheet Aktif Saat Ini ({activePartitionInfo?.name || "Sheet 1"} —{" "}
+                {activePartitionInfo?.rowCount.toLocaleString() || "4,000,000"}{" "}
+                baris)
+              </option>
+              {hasVirtualSheets &&
+                sheetPartitions.map((part) => (
+                  <option key={part.index} value={`sheet-${part.index}`}>
+                    {part.name} Saja ({part.rowCount.toLocaleString()} baris)
+                  </option>
+                ))}
+              <option value="all">
+                Seluruh Dataset ({totalRows.toLocaleString()} baris)
+              </option>
+            </select>
+            {activeQuery && (
+              <p
+                style={{
+                  color: "#a78bfa",
+                  fontSize: "11px",
+                  margin: "6px 0 0 0",
+                }}
+              >
+                ℹ Filter aktif: {activeQuery.matchedRows.toLocaleString()} baris
+                cocok
+              </p>
+            )}
+          </div>
+        )}
+
         {loading && (
-          <div style={{ marginBottom: '16px', background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #334155' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 'bold' }}>Proses Ekspor / Simpan File...</span>
-              <span id="export-progress-percent" style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 'bold' }}>{progressPercent}%</span>
+          <div
+            style={{
+              marginBottom: "16px",
+              background: "#0f172a",
+              padding: "12px",
+              borderRadius: "8px",
+              border: "1px solid #334155",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "6px",
+              }}
+            >
+              <span
+                style={{
+                  color: "#38bdf8",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                }}
+              >
+                Proses Ekspor / Simpan File...
+              </span>
+              <span
+                id="export-progress-percent"
+                style={{
+                  color: "#38bdf8",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                }}
+              >
+                {progressPercent}%
+              </span>
             </div>
-            <div style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
-              <div 
-                style={{ 
-                  height: '100%', 
-                  width: `${progressPercent}%`, 
-                  background: 'linear-gradient(90deg, #38bdf8 0%, #818cf8 100%)',
-                  transition: 'width 0.2s ease-out'
-                }} 
+            <div
+              style={{
+                width: "100%",
+                height: "8px",
+                background: "#1e293b",
+                borderRadius: "4px",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${progressPercent}%`,
+                  background:
+                    "linear-gradient(90deg, #38bdf8 0%, #818cf8 100%)",
+                  transition: "width 0.2s ease-out",
+                }}
               />
             </div>
-            <p id="export-status-message" style={{ color: '#cbd5e1', fontSize: '11px', marginTop: '6px', margin: '6px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {progressMessage || 'Memproses data...'}
+            <p
+              id="export-status-message"
+              style={{
+                color: "#cbd5e1",
+                fontSize: "11px",
+                marginTop: "6px",
+                margin: "6px 0 0 0",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {progressMessage || "Memproses data..."}
             </p>
           </div>
         )}
 
-        {error && <p style={{ color: '#ef4444', marginBottom: '12px', fontSize: '13px' }}>{error}</p>}
-        {successMessage && <p style={{ color: '#10b981', marginBottom: '12px', fontWeight: 'bold', fontSize: '13px' }}>{successMessage}</p>}
+        {error && (
+          <p
+            style={{ color: "#ef4444", marginBottom: "12px", fontSize: "13px" }}
+          >
+            {error}
+          </p>
+        )}
+        {successMessage && (
+          <p
+            style={{
+              color: "#10b981",
+              marginBottom: "12px",
+              fontWeight: "bold",
+              fontSize: "13px",
+            }}
+          >
+            {successMessage}
+          </p>
+        )}
 
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px', flexWrap: 'wrap' }}>
-          <button onClick={onClose} disabled={loading} style={cancelBtnStyle}>Batal</button>
-          <button onClick={handleDownload} disabled={loading} style={exportBtnStyle}>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            justifyContent: "flex-end",
+            marginTop: "20px",
+            flexWrap: "wrap",
+          }}
+        >
+          <button
+            id="export-cancel-btn"
+            onClick={onClose}
+            disabled={loading}
+            style={cancelBtnStyle}
+          >
+            Batal
+          </button>
+          <button
+            id="export-download-btn"
+            onClick={handleDownload}
+            disabled={loading}
+            style={exportBtnStyle}
+          >
             📥 Unduh File
           </button>
-          {/* <button onClick={handleSaveToDesktop} disabled={loading} style={desktopBtnStyle}>
+          {/* <button id="export-desktop-btn" onClick={handleSaveToDesktop} disabled={loading} style={desktopBtnStyle}>
             💾 Simpan ke Desktop
           </button> */}
         </div>
@@ -276,25 +583,86 @@ const getExportBlob = async (
 }
 
 const overlayStyle: React.CSSProperties = {
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: "rgba(0, 0, 0, 0.75)",
+  backdropFilter: "blur(6px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000,
 };
+
 const modalStyle: React.CSSProperties = {
-    background: '#1e293b', padding: '24px', borderRadius: '12px', width: '420px',
-    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', color: '#f8fafc', border: '1px solid #334155'
+  background: "#0f172a",
+  padding: "24px",
+  borderRadius: "12px",
+  width: "480px",
+  maxWidth: "92vw",
+  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7)",
+  color: "#f8fafc",
+  border: "1px solid #1e293b",
 };
-const selectStyle = {
-    width: '100%', padding: '8px 12px', borderRadius: '6px', background: '#0f172a', border: '1px solid #475569', color: '#f8fafc', fontSize: '13px'
+
+const selectStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "9px 12px",
+  borderRadius: "7px",
+  background: "#1e293b",
+  border: "1px solid #334155",
+  color: "#f8fafc",
+  fontSize: "13px",
+  outline: "none",
 };
-const inputStyle = {
-    width: '100%', padding: '8px 12px', borderRadius: '6px', background: '#0f172a', border: '1px solid #475569', color: '#f8fafc', boxSizing: 'border-box' as const, fontSize: '13px'
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "9px 12px",
+  borderRadius: "7px",
+  background: "#1e293b",
+  border: "1px solid #334155",
+  color: "#f8fafc",
+  boxSizing: "border-box" as const,
+  fontSize: "13px",
+  outline: "none",
 };
-const cancelBtnStyle = {
-    padding: '8px 16px', borderRadius: '6px', border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: '13px'
+
+const cancelBtnStyle: React.CSSProperties = {
+  padding: "9px 16px",
+  borderRadius: "7px",
+  border: "1px solid #334155",
+  background: "transparent",
+  color: "#cbd5e1",
+  cursor: "pointer",
+  fontSize: "13px",
+  fontWeight: "600",
+  transition: "all 0.15s ease",
 };
-const exportBtnStyle = {
-    padding: '8px 16px', borderRadius: '6px', border: 'none', background: '#10b981', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px'
+
+const exportBtnStyle: React.CSSProperties = {
+  padding: "9px 18px",
+  borderRadius: "7px",
+  border: "none",
+  background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+  color: "#ffffff",
+  fontWeight: "600",
+  cursor: "pointer",
+  fontSize: "13px",
+  boxShadow: "0 2px 8px rgba(37, 99, 235, 0.35)",
+  transition: "all 0.15s ease",
 };
-const desktopBtnStyle = {
-    padding: '8px 16px', borderRadius: '6px', border: 'none', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px'
+
+const desktopBtnStyle: React.CSSProperties = {
+  padding: "9px 16px",
+  borderRadius: "7px",
+  border: "none",
+  background: "#0284c7",
+  color: "#ffffff",
+  fontWeight: "600",
+  cursor: "pointer",
+  fontSize: "13px",
+  transition: "all 0.15s ease",
 };

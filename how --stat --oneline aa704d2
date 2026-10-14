@@ -1,0 +1,327 @@
+[33maa704d2[m fix :  part 1 big data
+ AGENTS.md                                          |      68 [32m+[m
+ CHECKPOINT_EXPORT_ERROR.md                         |      71 [31m-[m
+ ...L_GOLDEN_CHECKPOINT_XLSX_FORMULA_WPS_WORKING.md |     100 [31m-[m
+ FINAL_GOLDEN_CHECKPOINT_XLSX_WORKFLOW.md           |     100 [31m-[m
+ GOLDEN_CHECKPOINT_FORMULA_IMPORT_EXPORT_WORKING.md |      70 [31m-[m
+ .../phase1a-large-csv/run_phase1a_ingestion.ts     |     350 [32m+[m
+ .../phase1a-large-csv/test_upload_failure_cases.ts |     179 [32m+[m
+ .../phase1a-large-csv/test_worker_recovery.ts      |     150 [32m+[m
+ .../validate_dataset_integrity.ts                  |     146 [32m+[m
+ .../phase1b-large-csv/run_phase1b_e2e_benchmark.ts |     476 [32m+[m
+ .../test_range_api_and_failures.ts                 |     289 [32m+[m
+ benchmarks/phase1b-large-csv/test_range_reader.ts  |     250 [32m+[m
+ .../phase1b-large-csv/test_worker_and_races.ts     |     208 [32m+[m
+ .../run_phase1c_e2e_benchmark.ts                   |     300 [32m+[m
+ .../phase1c-filter-sort/test_filter_engine.ts      |     148 [32m+[m
+ .../test_query_index_recovery.ts                   |     165 [32m+[m
+ .../phase1c-filter-sort/test_row_resolver.ts       |      93 [32m+[m
+ benchmarks/phase1c-filter-sort/test_sort_engine.ts |     156 [32m+[m
+ benchmarks/phase1d-ui/test_phase1d_integration.ts  |     468 [32m+[m
+ benchmarks/phase1d-ui/test_virtual_sheets.ts       |     560 [32m+[m
+ docker-compose.yml                                 |      26 [32m+[m
+ .../migration.sql                                  |     190 [32m+[m
+ prisma/schema.prisma                               |     103 [32m+[m
+ src/app/api/v1/datasets/[id]/export/csv/route.ts   |     545 [32m+[m
+ src/app/api/v1/datasets/[id]/progress/route.ts     |      55 [32m+[m
+ .../datasets/[id]/query/[queryId]/range/route.ts   |     137 [32m+[m
+ .../api/v1/datasets/[id]/query/[queryId]/route.ts  |      94 [32m+[m
+ src/app/api/v1/datasets/[id]/query/route.ts        |     132 [32m+[m
+ src/app/api/v1/datasets/[id]/range/route.ts        |     161 [32m+[m
+ src/app/api/v1/datasets/[id]/route.ts              |      58 [32m+[m
+ src/app/api/v1/datasets/[id]/upload/chunk/route.ts |      63 [32m+[m
+ .../api/v1/datasets/[id]/upload/finalize/route.ts  |      37 [32m+[m
+ src/app/api/v1/datasets/route.ts                   |      68 [32m+[m
+ src/app/favicon-1.ico                              |     Bin [31m25931[m -> [32m0[m bytes
+ src/app/globals.css                                |     126 [32m+[m[31m-[m
+ src/components/spreadsheet/DatasetQueryModal.tsx   |     838 [32m+[m
+ src/components/spreadsheet/ExportModal.tsx         |     702 [32m+[m[31m-[m
+ src/components/spreadsheet/ImportModal.tsx         |      37 [32m+[m[31m-[m
+ src/components/spreadsheet/JumpToRowModal.tsx      |     392 [32m+[m[31m-[m
+ src/components/spreadsheet/Spreadsheet.tsx         |     969 [32m+[m[31m-[m
+ src/components/spreadsheet/SpreadsheetToolbar.tsx  |     642 [32m+[m[31m-[m
+ src/lib/export/csv.ts                              |     762 [32m+[m[31m-[m
+ src/lib/export/excel.ts                            |     102 [32m+[m[31m-[m
+ src/lib/largeCsv/datasetUploadService.ts           |     303 [32m+[m
+ src/lib/largeCsv/parser/csvLineParser.ts           |      44 [32m+[m
+ src/lib/largeCsv/query/datasetRowResolver.ts       |     213 [32m+[m
+ src/lib/largeCsv/query/externalSortEngine.ts       |     290 [32m+[m
+ src/lib/largeCsv/query/filterEngine.ts             |     342 [32m+[m
+ src/lib/largeCsv/query/queryIndexManager.ts        |     455 [32m+[m
+ src/lib/largeCsv/query/types.ts                    |      98 [32m+[m
+ src/lib/largeCsv/queue/datasetImportQueue.ts       |      93 [32m+[m
+ src/lib/largeCsv/reader/datasetRangeReader.ts      |     401 [32m+[m
+ src/lib/largeCsv/storage/storagePaths.ts           |      46 [32m+[m
+ src/lib/largeCsv/worker/csvImportWorker.ts         |     533 [32m+[m
+ src/lib/storage/opfs/datasetReader.ts              |       8 [32m+[m
+ src/lib/storage/opfs/rowIndex.ts                   |       4 [32m+[m
+ src/lib/univer/univerPassivation.ts                |     121 [32m+[m
+ src/lib/viewport/boundedLruCache.ts                |     101 [32m+[m
+ src/lib/viewport/datasetViewportController.ts      |     720 [32m+[m
+ src/lib/viewport/types.ts                          |      26 [32m+[m[31m-[m
+ src/lib/viewport/univerViewportAdapter.ts          |     300 [32m+[m[31m-[m
+ src/lib/viewport/viewportController.ts             |     281 [32m+[m[31m-[m
+ src/lib/workers/csvImport.worker.ts                |       3 [32m+[m[31m-[m
+ src/lib/workers/datasetViewport.worker.ts          |     241 [32m+[m
+ src/worker/csvImportWorkerHost.ts                  |      54 [32m+[m
+ .../part_000.bin                                   |       1 [32m+[m
+ .../part_000.idx                                   |     Bin [31m0[m -> [32m16[m bytes
+ .../part_001.bin.tmp                               |       0
+ .../part_001.idx.tmp                               |       0
+ .../part_000.bin                                   |     Bin [31m0[m -> [32m537862754[m bytes
+ .../part_000.idx                                   |     Bin [31m0[m -> [32m16000008[m bytes
+ .../part_001.bin                                   |     Bin [31m0[m -> [32m538979180[m bytes
+ .../part_001.idx                                   |     Bin [31m0[m -> [32m16000008[m bytes
+ .../part_002.bin                                   |     Bin [31m0[m -> [32m538944043[m bytes
+ .../part_002.idx                                   |     Bin [31m0[m -> [32m16000008[m bytes
+ .../part_003.bin                                   | 2000000 [32m+++++++++++++++++[m
+ .../part_003.idx                                   |     Bin [31m0[m -> [32m16000008[m bytes
+ .../part_004.bin                                   | 2000000 [32m+++++++++++++++++[m
+ .../part_004.idx                                   |     Bin [31m0[m -> [32m16000008[m bytes
+ .../part_005.bin                                   | 1809233 [32m+++++++++++++++[m
+ .../part_005.idx                                   |     Bin [31m0[m -> [32m14473872[m bytes
+ ...ry_q_0f51000fac98c91c04442c43e6ad5b67.meta.json |      24 [32m+[m
+ .../query_q_0f51000fac98c91c04442c43e6ad5b67.qidx  |     Bin [31m0[m -> [32m643492[m bytes
+ ...ry_q_23beccac12b28e47c10024a1d5b48ee6.meta.json |      24 [32m+[m
+ .../query_q_23beccac12b28e47c10024a1d5b48ee6.qidx  |     Bin [31m0[m -> [32m2052[m bytes
+ ...ry_q_4962bcbed5b4f3ab84fa18a936e0ab9c.meta.json |      24 [32m+[m
+ .../query_q_4962bcbed5b4f3ab84fa18a936e0ab9c.qidx  |     Bin [31m0[m -> [32m2048[m bytes
+ ...ry_q_7bab87b150a07c793b9b11e89e3d094b.meta.json |      33 [32m+[m
+ .../query_q_7bab87b150a07c793b9b11e89e3d094b.qidx  |     Bin [31m0[m -> [32m597520[m bytes
+ ...ry_q_89265e7bc192c7e13f4f0122ce78bb66.meta.json |      33 [32m+[m
+ .../query_q_89265e7bc192c7e13f4f0122ce78bb66.qidx  |     Bin [31m0[m -> [32m597520[m bytes
+ .../source.csv                                     |       1 [32m+[m
+ .../source.csv                                     |    5001 [32m+[m
+ .../source.csv                                     |       1 [32m+[m
+ .../source.csv                                     |     Bin [31m0[m -> [32m3121309240[m bytes
+ .../source.csv                                     |       1 [32m+[m
+ .../source.csv                                     |       1 [32m+[m
+ .../source.csv                                     |       1 [32m+[m
+ .../test-user-data/Default/Cache/Cache_Data/data_0 |     Bin [31m0[m -> [32m45056[m bytes
+ .../test-user-data/Default/Cache/Cache_Data/data_1 |     Bin [31m0[m -> [32m270336[m bytes
+ .../test-user-data/Default/Cache/Cache_Data/data_2 |     Bin [31m0[m -> [32m1056768[m bytes
+ .../test-user-data/Default/Cache/Cache_Data/data_3 |     Bin [31m0[m -> [32m4202496[m bytes
+ .../Default/Cache/Cache_Data/f_000001              |     Bin [31m0[m -> [32m23108[m bytes
+ .../Default/Cache/Cache_Data/f_000002              |     Bin [31m0[m -> [32m29288[m bytes
+ .../Default/Cache/Cache_Data/f_000003              |     Bin [31m0[m -> [32m32189[m bytes
+ .../Default/Cache/Cache_Data/f_000004              |     Bin [31m0[m -> [32m27006[m bytes
+ .../Default/Cache/Cache_Data/f_000005              |     Bin [31m0[m -> [32m33043[m bytes
+ .../Default/Cache/Cache_Data/f_000006              |     Bin [31m0[m -> [32m26049[m bytes
+ .../Default/Cache/Cache_Data/f_000007              |     Bin [31m0[m -> [32m249984[m bytes
+ .../Default/Cache/Cache_Data/f_000008              |     Bin [31m0[m -> [32m184506[m bytes
+ .../Default/Cache/Cache_Data/f_000009              |     Bin [31m0[m -> [32m192396[m bytes
+ .../Default/Cache/Cache_Data/f_00000a              |     Bin [31m0[m -> [32m22582[m bytes
+ .../Default/Cache/Cache_Data/f_00000b              |     Bin [31m0[m -> [32m39937[m bytes
+ .../Default/Cache/Cache_Data/f_00000c              |     Bin [31m0[m -> [32m22555[m bytes
+ .../Default/Cache/Cache_Data/f_00000d              |     Bin [31m0[m -> [32m27187[m bytes
+ .../Default/Cache/Cache_Data/f_00000e              |     Bin [31m0[m -> [32m87056[m bytes
+ .../Default/Cache/Cache_Data/f_00000f              |     Bin [31m0[m -> [32m33934[m bytes
+ .../Default/Cache/Cache_Data/f_000010              |     Bin [31m0[m -> [32m155204[m bytes
+ .../Default/Cache/Cache_Data/f_000011              |     Bin [31m0[m -> [32m60668[m bytes
+ .../Default/Cache/Cache_Data/f_000012              |     Bin [31m0[m -> [32m22474[m bytes
+ .../Default/Cache/Cache_Data/f_000013              |     Bin [31m0[m -> [32m24832[m bytes
+ .../Default/Cache/Cache_Data/f_000014              |     Bin [31m0[m -> [32m52815[m bytes
+ .../Default/Cache/Cache_Data/f_000015              |     Bin [31m0[m -> [32m103659[m bytes
+ .../Default/Cache/Cache_Data/f_000016              |     Bin [31m0[m -> [32m43534[m bytes
+ .../Default/Cache/Cache_Data/f_000017              |     Bin [31m0[m -> [32m79277[m bytes
+ .../Default/Cache/Cache_Data/f_000018              |     Bin [31m0[m -> [32m21448[m bytes
+ .../Default/Cache/Cache_Data/f_000019              |     Bin [31m0[m -> [32m228107[m bytes
+ .../Default/Cache/Cache_Data/f_00001a              |     Bin [31m0[m -> [32m90447[m bytes
+ .../Default/Cache/Cache_Data/f_00001b              |     Bin [31m0[m -> [32m50072[m bytes
+ .../Default/Cache/Cache_Data/f_00001c              |     Bin [31m0[m -> [32m58333[m bytes
+ .../Default/Cache/Cache_Data/f_00001d              |     Bin [31m0[m -> [32m230006[m bytes
+ .../Default/Cache/Cache_Data/f_00001e              |     Bin [31m0[m -> [32m139571[m bytes
+ .../Default/Cache/Cache_Data/f_00001f              |     Bin [31m0[m -> [32m63744[m bytes
+ .../Default/Cache/Cache_Data/f_000020              |     Bin [31m0[m -> [32m18287[m bytes
+ .../Default/Cache/Cache_Data/f_000021              |     Bin [31m0[m -> [32m21107[m bytes
+ .../Default/Cache/Cache_Data/f_000022              |     Bin [31m0[m -> [32m54539[m bytes
+ .../Default/Cache/Cache_Data/f_000023              |     Bin [31m0[m -> [32m253381[m bytes
+ .../Default/Cache/Cache_Data/f_000024              |     Bin [31m0[m -> [32m26764[m bytes
+ .../Default/Cache/Cache_Data/f_000025              |     Bin [31m0[m -> [32m22714[m bytes
+ .../Default/Cache/Cache_Data/f_000026              |     Bin [31m0[m -> [32m67599[m bytes
+ .../Default/Cache/Cache_Data/f_000027              |     Bin [31m0[m -> [32m42785[m bytes
+ .../Default/Cache/Cache_Data/f_000028              |     Bin [31m0[m -> [32m468529[m bytes
+ .../Default/Cache/Cache_Data/f_000029              |     Bin [31m0[m -> [32m161523[m bytes
+ .../Default/Cache/Cache_Data/f_00002a              |     Bin [31m0[m -> [32m28966[m bytes
+ .../Default/Cache/Cache_Data/f_00002b              |     Bin [31m0[m -> [32m25892[m bytes
+ .../test-user-data/Default/Cache/Cache_Data/index  |     Bin [31m0[m -> [32m524656[m bytes
+ .../Default/Cache/No_Vary_Search/journal.baj       |       1 [32m+[m
+ .../Default/Cache/No_Vary_Search/snapshot.baf      |     Bin [31m0[m -> [32m20[m bytes
+ .../Default/Code Cache/js/0072e72330c71330_0       |     Bin [31m0[m -> [32m263[m bytes
+ .../Default/Code Cache/js/04a507e747272b81_0       |     Bin [31m0[m -> [32m298[m bytes
+ .../Default/Code Cache/js/056ae8f4ec236641_0       |     Bin [31m0[m -> [32m458352[m bytes
+ .../Default/Code Cache/js/06650925ff2133b0_0       |     Bin [31m0[m -> [32m299[m bytes
+ .../Default/Code Cache/js/06aa6065f113a730_0       |     Bin [31m0[m -> [32m86104[m bytes
+ .../Default/Code Cache/js/0888c6028ea2376f_0       |     Bin [31m0[m -> [32m286592[m bytes
+ .../Default/Code Cache/js/089ae4f168a0672a_0       |     Bin [31m0[m -> [32m33640[m bytes
+ .../Default/Code Cache/js/0a66a67cb46fa6e9_0       |     Bin [31m0[m -> [32m291[m bytes
+ .../Default/Code Cache/js/104d10b0b45602d8_0       |     Bin [31m0[m -> [32m507032[m bytes
+ .../Default/Code Cache/js/124fa31d33a10636_0       |     Bin [31m0[m -> [32m303[m bytes
+ .../Default/Code Cache/js/1368183c50440095_0       |     Bin [31m0[m -> [32m263[m bytes
+ .../Default/Code Cache/js/13d3faa35f8d0375_0       |     Bin [31m0[m -> [32m288024[m bytes
+ .../Default/Code Cache/js/1a67f1c0569a0d52_0       |     Bin [31m0[m -> [32m135856[m bytes
+ .../Default/Code Cache/js/2047f8d462881226_0       |     Bin [31m0[m -> [32m6392[m bytes
+ .../Default/Code Cache/js/21586db2844a6ad1_0       |     Bin [31m0[m -> [32m341392[m bytes
+ .../Default/Code Cache/js/216d7123b3fe9dd6_0       |     Bin [31m0[m -> [32m41144[m bytes
+ .../Default/Code Cache/js/23b4226138b1da78_0       |     Bin [31m0[m -> [32m81080[m bytes
+ .../Default/Code Cache/js/24595869553f74b2_0       |     Bin [31m0[m -> [32m125072[m bytes
+ .../Default/Code Cache/js/29ac5af2665e6b46_0       |     Bin [31m0[m -> [32m289[m bytes
+ .../Default/Code Cache/js/2bbc2d2989e90d3e_0       |     Bin [31m0[m -> [32m50176[m bytes
+ .../Default/Code Cache/js/2c01c2833f942fbe_0       |     Bin [31m0[m -> [32m264[m bytes
+ .../Default/Code Cache/js/31cc5edc13a0f689_0       |     Bin [31m0[m -> [32m40864[m bytes
+ .../Default/Code Cache/js/349467b7f9a3138b_0       |     Bin [31m0[m -> [32m31304[m bytes
+ .../Default/Code Cache/js/35f88821125ce7ed_0       |     Bin [31m0[m -> [32m107688[m bytes
+ .../Default/Code Cache/js/39519e9391aa2ea5_0       |     Bin [31m0[m -> [32m8981[m bytes
+ .../Default/Code Cache/js/403ee6198cbe175f_0       |     Bin [31m0[m -> [32m11577[m bytes
+ .../Default/Code Cache/js/4040c2252c1f023a_0       |     Bin [31m0[m -> [32m156440[m bytes
+ .../Default/Code Cache/js/42ce67ad720067c3_0       |     Bin [31m0[m -> [32m290[m bytes
+ .../Default/Code Cache/js/4466329187e03f83_0       |     Bin [31m0[m -> [32m268136[m bytes
+ .../Default/Code Cache/js/4696f85d385496fb_0       |     Bin [31m0[m -> [32m265[m bytes
+ .../Default/Code Cache/js/469de5051f1b053f_0       |     Bin [31m0[m -> [32m80008[m bytes
+ .../Default/Code Cache/js/4700284ab23968bd_0       |     Bin [31m0[m -> [32m286[m bytes
+ .../Default/Code Cache/js/47b2d42d1d40d486_0       |     Bin [31m0[m -> [32m2584[m bytes
+ .../Default/Code Cache/js/52e65d8d5452c241_0       |     Bin [31m0[m -> [32m280[m bytes
+ .../Default/Code Cache/js/58716e43f43414b0_0       |     Bin [31m0[m -> [32m286[m bytes
+ .../Default/Code Cache/js/5d45a7b06e50701d_0       |     Bin [31m0[m -> [32m286[m bytes
+ .../Default/Code Cache/js/60975d3eab9533b9_0       |     Bin [31m0[m -> [32m300336[m bytes
+ .../Default/Code Cache/js/60f1c965b27b1162_0       |     Bin [31m0[m -> [32m22752[m bytes
+ .../Default/Code Cache/js/6162bb3f55613006_0       |     Bin [31m0[m -> [32m59584[m bytes
+ .../Default/Code Cache/js/6cb502754701801f_0       |     Bin [31m0[m -> [32m289[m bytes
+ .../Default/Code Cache/js/7bad67624de6ff91_0       |     Bin [31m0[m -> [32m293[m bytes
+ .../Default/Code Cache/js/7c25127496abcbed_0       |     Bin [31m0[m -> [32m263[m bytes
+ .../Default/Code Cache/js/7db7c89f9cf944e0_0       |     Bin [31m0[m -> [32m270624[m bytes
+ .../Default/Code Cache/js/8543fc55702f4289_0       |     Bin [31m0[m -> [32m277[m bytes
+ .../Default/Code Cache/js/9059200cf3489f4a_0       |     Bin [31m0[m -> [32m659976[m bytes
+ .../Default/Code Cache/js/90f7b236be63214b_0       |     Bin [31m0[m -> [32m272[m bytes
+ .../Default/Code Cache/js/92368c463864792b_0       |     Bin [31m0[m -> [32m138736[m bytes
+ .../Default/Code Cache/js/940c894b82e216a3_0       |     Bin [31m0[m -> [32m1139[m bytes
+ .../Default/Code Cache/js/97454dd911d00a50_0       |     Bin [31m0[m -> [32m270[m bytes
+ .../Default/Code Cache/js/975d42f75ca694a6_0       |     Bin [31m0[m -> [32m268712[m bytes
+ .../Default/Code Cache/js/98b2d50cfa235f4e_0       |     Bin [31m0[m -> [32m251[m bytes
+ .../Default/Code Cache/js/9bb76865da8cd229_0       |     Bin [31m0[m -> [32m23936[m bytes
+ .../Default/Code Cache/js/a321eafec440de4b_0       |     Bin [31m0[m -> [32m354520[m bytes
+ .../Default/Code Cache/js/a4f0569dad138e94_0       |     Bin [31m0[m -> [32m177800[m bytes
+ .../Default/Code Cache/js/a78f4817c092a972_0       |     Bin [31m0[m -> [32m478176[m bytes
+ .../Default/Code Cache/js/a87e3a8c1df22c66_0       |     Bin [31m0[m -> [32m117896[m bytes
+ .../Default/Code Cache/js/a9c9f567adea1fc8_0       |     Bin [31m0[m -> [32m98696[m bytes
+ .../Default/Code Cache/js/aa99a5d5fff54be5_0       |     Bin [31m0[m -> [32m304[m bytes
+ .../Default/Code Cache/js/abe90aca2a7814fc_0       |     Bin [31m0[m -> [32m286[m bytes
+ .../Default/Code Cache/js/ad9c55dc9c83e816_0       |     Bin [31m0[m -> [32m56888[m bytes
+ .../Default/Code Cache/js/b0d5b76eedfd5af1_0       |     Bin [31m0[m -> [32m164960[m bytes
+ .../Default/Code Cache/js/b265a3049a2fb60e_0       |     Bin [31m0[m -> [32m130672[m bytes
+ .../Default/Code Cache/js/b3094a0ed3538bae_0       |     Bin [31m0[m -> [32m36608[m bytes
+ .../Default/Code Cache/js/b425c0e85c82c6d5_0       |     Bin [31m0[m -> [32m263[m bytes
+ .../Default/Code Cache/js/b62b345699409f43_0       |     Bin [31m0[m -> [32m277[m bytes
+ .../Default/Code Cache/js/b88ba1e55d10ac57_0       |     Bin [31m0[m -> [32m10545[m bytes
+ .../Default/Code Cache/js/b8d1a18de53d518e_0       |     Bin [31m0[m -> [32m302[m bytes
+ .../Default/Code Cache/js/b95757876f70a3b3_0       |     Bin [31m0[m -> [32m59824[m bytes
+ .../Default/Code Cache/js/bd4fce008742f297_0       |     Bin [31m0[m -> [32m10248[m bytes
+ .../Default/Code Cache/js/bddb481aaf500e52_0       |     Bin [31m0[m -> [32m54960[m bytes
+ .../Default/Code Cache/js/bee7b3b47a9f89d6_0       |     Bin [31m0[m -> [32m282[m bytes
+ .../Default/Code Cache/js/bf59ae6f44b9b9a8_0       |     Bin [31m0[m -> [32m78376[m bytes
+ .../Default/Code Cache/js/bf92fcf787e812c1_0       |     Bin [31m0[m -> [32m284[m bytes
+ .../Default/Code Cache/js/c365d938a1b4de41_0       |     Bin [31m0[m -> [32m106776[m bytes
+ .../Default/Code Cache/js/c5252199f277fe71_0       |     Bin [31m0[m -> [32m4778[m bytes
+ .../Default/Code Cache/js/c65894b594112ec0_0       |     Bin [31m0[m -> [32m279[m bytes
+ .../Default/Code Cache/js/ca5c3a52e0df5581_0       |     Bin [31m0[m -> [32m290[m bytes
+ .../Default/Code Cache/js/cb9207c753924980_0       |     Bin [31m0[m -> [32m265[m bytes
+ .../Default/Code Cache/js/cb98901746f1c941_0       |     Bin [31m0[m -> [32m151272[m bytes
+ .../Default/Code Cache/js/ccd5196bc9ae6733_0       |     Bin [31m0[m -> [32m2123[m bytes
+ .../Default/Code Cache/js/cd2b601c20e4d97a_0       |     Bin [31m0[m -> [32m367472[m bytes
+ .../Default/Code Cache/js/d5632b570dffe398_0       |     Bin [31m0[m -> [32m268[m bytes
+ .../Default/Code Cache/js/d625ea910367a433_0       |     Bin [31m0[m -> [32m275[m bytes
+ .../Default/Code Cache/js/d853fec48ea7a105_0       |     Bin [31m0[m -> [32m283[m bytes
+ .../Default/Code Cache/js/da0c7fc74f8e6e0f_0       |     Bin [31m0[m -> [32m292[m bytes
+ .../Default/Code Cache/js/dae95aebe0fb74bb_0       |     Bin [31m0[m -> [32m290[m bytes
+ .../Default/Code Cache/js/de223cf60aafb407_0       |     Bin [31m0[m -> [32m297[m bytes
+ .../Default/Code Cache/js/e4992613192c4827_0       |     Bin [31m0[m -> [32m112184[m bytes
+ .../Default/Code Cache/js/e5750dd00429c4a8_0       |     Bin [31m0[m -> [32m282[m bytes
+ .../Default/Code Cache/js/e729c47594854483_0       |     Bin [31m0[m -> [32m253[m bytes
+ .../Default/Code Cache/js/e98e5303349cdabf_0       |     Bin [31m0[m -> [32m6972[m bytes
+ .../Default/Code Cache/js/ef55731e40a5e835_0       |     Bin [31m0[m -> [32m291[m bytes
+ .../Default/Code Cache/js/f2c995ba304e3816_0       |     Bin [31m0[m -> [32m266[m bytes
+ .../Default/Code Cache/js/f2f340d8060d4d8f_0       |     Bin [31m0[m -> [32m224208[m bytes
+ .../Default/Code Cache/js/f5e10921e600042a_0       |     Bin [31m0[m -> [32m299[m bytes
+ .../Default/Code Cache/js/f7114d74dcb52927_0       |     Bin [31m0[m -> [32m284[m bytes
+ .../Default/Code Cache/js/f830037e1f253521_0       |     Bin [31m0[m -> [32m5396[m bytes
+ .../Default/Code Cache/js/f93168e33461efa1_0       |     Bin [31m0[m -> [32m22256[m bytes
+ .../Default/Code Cache/js/fa4a250af18ad73c_0       |     Bin [31m0[m -> [32m277[m bytes
+ storage/test-user-data/Default/Code Cache/js/index |     Bin [31m0[m -> [32m24[m bytes
+ .../Default/Code Cache/js/index-dir/the-real-index |     Bin [31m0[m -> [32m2424[m bytes
+ .../test-user-data/Default/Code Cache/wasm/index   |     Bin [31m0[m -> [32m24[m bytes
+ .../Code Cache/wasm/index-dir/the-real-index       |     Bin [31m0[m -> [32m48[m bytes
+ storage/test-user-data/Default/DIPS                |     Bin [31m0[m -> [32m36864[m bytes
+ .../Default/DawnGraphiteCache/data_0               |     Bin [31m0[m -> [32m8192[m bytes
+ .../Default/DawnGraphiteCache/data_1               |     Bin [31m0[m -> [32m270336[m bytes
+ .../Default/DawnGraphiteCache/data_2               |     Bin [31m0[m -> [32m8192[m bytes
+ .../Default/DawnGraphiteCache/data_3               |     Bin [31m0[m -> [32m8192[m bytes
+ .../test-user-data/Default/DawnGraphiteCache/index |     Bin [31m0[m -> [32m262512[m bytes
+ .../test-user-data/Default/DawnWebGPUCache/data_0  |     Bin [31m0[m -> [32m8192[m bytes
+ .../test-user-data/Default/DawnWebGPUCache/data_1  |     Bin [31m0[m -> [32m270336[m bytes
+ .../test-user-data/Default/DawnWebGPUCache/data_2  |     Bin [31m0[m -> [32m8192[m bytes
+ .../test-user-data/Default/DawnWebGPUCache/data_3  |     Bin [31m0[m -> [32m8192[m bytes
+ .../test-user-data/Default/DawnWebGPUCache/index   |     Bin [31m0[m -> [32m262512[m bytes
+ .../Default/File System/000/t/.usage               |     Bin [31m0[m -> [32m24[m bytes
+ .../Default/File System/000/t/Paths/000003.log     |     Bin [31m0[m -> [32m1908[m bytes
+ .../Default/File System/000/t/Paths/CURRENT        |       1 [32m+[m
+ .../Default/File System/000/t/Paths/LOCK           |       0
+ .../Default/File System/000/t/Paths/LOG            |       3 [32m+[m
+ .../Default/File System/000/t/Paths/LOG.old        |       3 [32m+[m
+ .../File System/000/t/Paths/MANIFEST-000001        |     Bin [31m0[m -> [32m41[m bytes
+ .../Default/File System/Origins/000003.log         |     Bin [31m0[m -> [32m99[m bytes
+ .../Default/File System/Origins/CURRENT            |       1 [32m+[m
+ .../Default/File System/Origins/LOCK               |       0
+ .../test-user-data/Default/File System/Origins/LOG |       3 [32m+[m
+ .../Default/File System/Origins/LOG.old            |       3 [32m+[m
+ .../Default/File System/Origins/MANIFEST-000001    |     Bin [31m0[m -> [32m41[m bytes
+ storage/test-user-data/Default/GPUCache/data_0     |     Bin [31m0[m -> [32m8192[m bytes
+ storage/test-user-data/Default/GPUCache/data_1     |     Bin [31m0[m -> [32m270336[m bytes
+ storage/test-user-data/Default/GPUCache/data_2     |     Bin [31m0[m -> [32m8192[m bytes
+ storage/test-user-data/Default/GPUCache/data_3     |     Bin [31m0[m -> [32m8192[m bytes
+ storage/test-user-data/Default/GPUCache/index      |     Bin [31m0[m -> [32m262512[m bytes
+ .../000003.log                                     |     Bin [31m0[m -> [32m30157[m bytes
+ .../http_localhost_3000.indexeddb.leveldb/CURRENT  |       1 [32m+[m
+ .../http_localhost_3000.indexeddb.leveldb/LOCK     |       0
+ .../http_localhost_3000.indexeddb.leveldb/LOG      |       3 [32m+[m
+ .../http_localhost_3000.indexeddb.leveldb/LOG.old  |       3 [32m+[m
+ .../MANIFEST-000001                                |     Bin [31m0[m -> [32m23[m bytes
+ .../Default/Local Storage/leveldb/000003.log       |     Bin [31m0[m -> [32m49[m bytes
+ .../Default/Local Storage/leveldb/CURRENT          |       1 [32m+[m
+ .../Default/Local Storage/leveldb/LOCK             |       0
+ .../Default/Local Storage/leveldb/LOG              |       3 [32m+[m
+ .../Default/Local Storage/leveldb/LOG.old          |       3 [32m+[m
+ .../Default/Local Storage/leveldb/MANIFEST-000001  |     Bin [31m0[m -> [32m41[m bytes
+ storage/test-user-data/Default/Network/Cookies     |     Bin [31m0[m -> [32m20480[m bytes
+ .../test-user-data/Default/Network/Cookies-journal |       0
+ .../Default/Network/NetworkDataMigrated            |       0
+ .../Default/PersistentOriginTrials/LOCK            |       0
+ .../Default/PersistentOriginTrials/LOG             |       0
+ .../Default/PersistentOriginTrials/LOG.old         |       0
+ .../Default/Session Storage/000003.log             |     Bin [31m0[m -> [32m68[m bytes
+ .../test-user-data/Default/Session Storage/CURRENT |       1 [32m+[m
+ .../test-user-data/Default/Session Storage/LOCK    |       0
+ storage/test-user-data/Default/Session Storage/LOG |       3 [32m+[m
+ .../test-user-data/Default/Session Storage/LOG.old |       3 [32m+[m
+ .../Default/Session Storage/MANIFEST-000001        |     Bin [31m0[m -> [32m41[m bytes
+ .../Default/Shared Dictionary/cache/index          |     Bin [31m0[m -> [32m24[m bytes
+ .../cache/index-dir/the-real-index                 |     Bin [31m0[m -> [32m48[m bytes
+ .../test-user-data/Default/Shared Dictionary/db    |     Bin [31m0[m -> [32m45056[m bytes
+ .../Default/Shared Dictionary/db-journal           |       0
+ .../test-user-data/Default/WebStorage/QuotaManager |     Bin [31m0[m -> [32m40960[m bytes
+ .../Default/WebStorage/QuotaManager-journal        |       0
+ storage/test-user-data/Default/chrome_debug.log    |      54 [32m+[m
+ .../Default/declarative_performance_observer.db    |     Bin [31m0[m -> [32m32768[m bytes
+ .../declarative_performance_observer.db-journal    |       0
+ .../Default/shared_proto_db/000003.log             |       0
+ .../test-user-data/Default/shared_proto_db/CURRENT |       1 [32m+[m
+ .../test-user-data/Default/shared_proto_db/LOCK    |       0
+ storage/test-user-data/Default/shared_proto_db/LOG |       3 [32m+[m
+ .../test-user-data/Default/shared_proto_db/LOG.old |       3 [32m+[m
+ .../Default/shared_proto_db/MANIFEST-000001        |     Bin [31m0[m -> [32m41[m bytes
+ .../Default/shared_proto_db/metadata/000003.log    |     Bin [31m0[m -> [32m228[m bytes
+ .../Default/shared_proto_db/metadata/CURRENT       |       1 [32m+[m
+ .../Default/shared_proto_db/metadata/LOCK          |       0
+ .../Default/shared_proto_db/metadata/LOG           |       3 [32m+[m
+ .../Default/shared_proto_db/metadata/LOG.old       |       3 [32m+[m
+ .../shared_proto_db/metadata/MANIFEST-000001       |     Bin [31m0[m -> [32m41[m bytes
+ 325 files changed, 5828570 insertions(+), 1175 deletions(-)

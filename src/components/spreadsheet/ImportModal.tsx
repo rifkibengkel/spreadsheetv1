@@ -203,18 +203,19 @@ const overlayStyle: React.CSSProperties = {
 };
 
 const modalStyle: React.CSSProperties = {
-  background: '#1e293b',
-  border: '1px solid #334155',
+  background: '#0f172a',
+  border: '1px solid #1e293b',
   padding: '24px',
-  borderRadius: '16px',
-  width: '460px',
+  borderRadius: '12px',
+  width: '480px',
+  maxWidth: '92vw',
   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
   color: '#f8fafc',
 };
 
 const dropzoneStyle: React.CSSProperties = {
   border: '2px dashed #334155',
-  borderRadius: '12px',
+  borderRadius: '10px',
   padding: '24px',
   textAlign: 'center',
   cursor: 'pointer',
@@ -227,37 +228,39 @@ const closeXBtnStyle: React.CSSProperties = {
   color: '#94a3b8',
   fontSize: '18px',
   cursor: 'pointer',
+  padding: '4px',
 };
 
 const cancelBtnStyle: React.CSSProperties = {
-  padding: '10px 18px',
-  borderRadius: '8px',
-  border: '1px solid #475569',
+  padding: '9px 16px',
+  borderRadius: '7px',
+  border: '1px solid #334155',
   background: 'transparent',
   color: '#cbd5e1',
   cursor: 'pointer',
-  fontWeight: 'bold',
+  fontWeight: '600',
   fontSize: '13px',
+  transition: 'all 0.15s ease',
 };
 
 const importBtnStyle = (disabled: boolean): React.CSSProperties => ({
-  padding: '10px 20px',
-  borderRadius: '8px',
+  padding: '9px 20px',
+  borderRadius: '7px',
   border: 'none',
-  background: disabled ? '#334155' : 'linear-gradient(135deg, #0284c7 0%, #0d9488 100%)',
-  color: disabled ? '#94a3b8' : '#ffffff',
-  fontWeight: 'bold',
+  background: disabled ? '#1e293b' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+  color: disabled ? '#64748b' : '#ffffff',
+  fontWeight: '600',
   cursor: disabled ? 'not-allowed' : 'pointer',
   fontSize: '13px',
-  boxShadow: disabled ? 'none' : '0 4px 14px rgba(2, 132, 199, 0.4)',
-  transition: 'all 0.2s ease-in-out',
+  boxShadow: disabled ? 'none' : '0 2px 8px rgba(37, 99, 235, 0.35)',
+  transition: 'all 0.15s ease',
 });
 
 const errorBannerStyle: React.CSSProperties = {
   marginTop: '12px',
   padding: '10px 14px',
   borderRadius: '8px',
-  background: '#7f1d1d',
+  background: 'rgba(127, 29, 29, 0.3)',
   color: '#fca5a5',
   fontSize: '13px',
   border: '1px solid #991b1b',

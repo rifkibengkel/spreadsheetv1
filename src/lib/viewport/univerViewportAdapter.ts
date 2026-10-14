@@ -4,7 +4,7 @@
  * Guarantees zero calculation storm, zero undo stack pollution, and <1MB heap usage.
  */
 
-import { IUniverViewportAdapter, CellEditRecord } from './types';
+import { IUniverViewportAdapter, CellEditRecord, VirtualSheetPartition, ROWS_PER_VIRTUAL_SHEET } from './types';
 import { OPFSMetadata, RowSlice } from '../storage/opfs/types';
 
 export class UniverViewportAdapter implements IUniverViewportAdapter {
@@ -32,13 +32,42 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
       const wb = this.univerAPI.getActiveWorkbook?.();
       if (!wb) return false;
       this.unitId = wb.getId?.() || '';
-      const sheet = wb.getActiveSheet?.();
-      if (!sheet) return false;
-      this.subUnitId = sheet.getSheetId?.() || '';
+      if (!this.subUnitId) {
+        const sheet = wb.getActiveSheet?.();
+        if (!sheet) return false;
+        this.subUnitId = sheet.getSheetId?.() || '';
+      }
       return !!(this.unitId && this.subUnitId);
     } catch {
       return false;
     }
+  }
+
+  public setActiveSubUnitId(sheetId: string): void {
+    this.subUnitId = sheetId;
+  }
+
+  public async activateSheet(sheetId: string): Promise<void> {
+    this.subUnitId = sheetId;
+    if (this.univerAPI && this.unitId) {
+      try {
+        const wb = this.univerAPI.getActiveWorkbook?.();
+        if (wb?.setActiveSheet) {
+          wb.setActiveSheet(sheetId);
+        } else {
+          await this.univerAPI.executeCommand('sheet.operation.set-worksheet-active', {
+            unitId: this.unitId,
+            subUnitId: sheetId,
+          });
+        }
+      } catch (err) {
+        console.warn('[UniverViewportAdapter] activateSheet failed:', err);
+      }
+    }
+  }
+
+  public getUniverAPI(): any {
+    return this.univerAPI;
   }
 
   public isReady(): boolean {
@@ -62,11 +91,240 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
   }
 
   /**
+   * Mounts multiple virtual sheets for 4M+ row datasets into Univer.
+   * Ensures each partition exists as a presentation sheet with header at row 0.
+   */
+  public async mountVirtualSheets(
+    partitions: VirtualSheetPartition[],
+    columnCount: number,
+    headers: string[]
+  ): Promise<void> {
+    if (!this.syncActiveSheet()) {
+      throw new Error('Univer workbook or active sheet not available.');
+    }
+
+    const wb = this.univerAPI.getActiveWorkbook();
+    this.headers = headers || [];
+    const hasHeaders = this.headers.length > 0;
+    this.logicalColumnCount = Math.max(26, columnCount);
+
+    const existingSheets = wb?.getSheets ? wb.getSheets() : [];
+    const existingSheetIds = new Set(
+      existingSheets.map((s: any) => s.getSheetId?.() || s.id || '')
+    );
+
+    // Prepare header row cellData (bold, row 0)
+    const headerCells: Record<number, { v: string; t: number; s?: any }> = {};
+    if (hasHeaders) {
+      for (let c = 0; c < this.headers.length; c++) {
+        headerCells[c] = {
+          v: this.headers[c],
+          t: 1, // string
+          s: { bl: 1 }, // bold
+        };
+      }
+    }
+
+    for (let i = 0; i < partitions.length; i++) {
+      const part = partitions[i];
+      const sheetRowCount = part.rowCount + (hasHeaders ? 1 : 0);
+      const sheetName = `Sheet${i + 1}`;
+
+      if (i === 0) {
+        const primarySheet =
+          (wb.getSheetByName ? wb.getSheetByName('Sheet1') : null) ||
+          existingSheets[0] ||
+          (wb.getActiveSheet ? wb.getActiveSheet() : null);
+        const primaryId = primarySheet?.getSheetId ? primarySheet.getSheetId() : this.subUnitId;
+        part.sheetId = primaryId;
+        this.subUnitId = primaryId;
+        this.logicalRowCount = sheetRowCount;
+
+        const rawSheet = primarySheet?.getSheet ? primarySheet.getSheet() : primarySheet?._worksheet || primarySheet;
+        if (rawSheet?.setRowCount) rawSheet.setRowCount(sheetRowCount);
+        if (rawSheet?.setColumnCount) rawSheet.setColumnCount(this.logicalColumnCount);
+        if (primarySheet?.setName) primarySheet.setName(sheetName);
+        else if (rawSheet?.setName) rawSheet.setName(sheetName);
+
+        try {
+          await this.univerAPI.executeCommand('sheet.mutation.set-worksheet-row-count', {
+            unitId: this.unitId,
+            subUnitId: this.subUnitId,
+            rowCount: sheetRowCount,
+          });
+          await this.univerAPI.executeCommand('sheet.mutation.set-worksheet-col-count', {
+            unitId: this.unitId,
+            subUnitId: this.subUnitId,
+            colCount: this.logicalColumnCount,
+          });
+        } catch {}
+
+        if (hasHeaders) {
+          try {
+            await this.univerAPI.executeCommand(
+              'sheet.mutation.set-range-values',
+              {
+                unitId: this.unitId,
+                subUnitId: this.subUnitId,
+                cellValue: { 0: headerCells },
+              },
+              { onlyLocal: true, fromCalculationPatch: true, fromFormula: true }
+            );
+          } catch {}
+        }
+      } else {
+        let targetSheet: any = null;
+        if (wb.getSheetByName) {
+          targetSheet = wb.getSheetByName(sheetName);
+        }
+        if (!targetSheet && existingSheets.length > i) {
+          const s = existingSheets[i];
+          if (s && s.getSheetId?.() !== this.subUnitId) {
+            targetSheet = s;
+          }
+        }
+
+        if (!targetSheet) {
+          if (wb.create) {
+            try {
+              targetSheet = wb.create(sheetName, sheetRowCount, this.logicalColumnCount);
+            } catch (createErr) {
+              console.warn(`[UniverViewportAdapter] wb.create warning for ${sheetName}:`, createErr);
+            }
+          }
+
+          if (!targetSheet) {
+            const targetSubId = part.sheetId || `sheet-${i + 1}`;
+            try {
+              await this.univerAPI.executeCommand('sheet.mutation.insert-sheet', {
+                unitId: this.unitId,
+                index: i,
+                sheet: {
+                  id: targetSubId,
+                  name: sheetName,
+                  tabColor: '',
+                  hidden: 0,
+                  rowCount: sheetRowCount,
+                  columnCount: this.logicalColumnCount,
+                  zoomRatio: 1,
+                  scrollTop: 0,
+                  scrollLeft: 0,
+                  defaultColumnWidth: 88,
+                  defaultRowHeight: 24,
+                  showGridlines: 1,
+                  rowHeader: { width: 46, hidden: 0 },
+                  columnHeader: { height: 20, hidden: 0 },
+                  rightToLeft: 0,
+                  type: 2,
+                  status: 0,
+                  cellData: hasHeaders ? { 0: headerCells } : {},
+                  freeze: { xSplit: 0, ySplit: 0, startRow: -1, startColumn: -1 },
+                },
+              });
+              existingSheetIds.add(targetSubId);
+              targetSheet = wb.getSheetBySheetId ? wb.getSheetBySheetId(targetSubId) : null;
+            } catch (insertErr) {
+              console.warn(`[UniverViewportAdapter] insert-sheet warning for ${sheetName}:`, insertErr);
+            }
+          }
+        }
+
+        const resolvedSubId = targetSheet?.getSheetId?.() || targetSheet?.id || part.sheetId || `sheet-${i + 1}`;
+        part.sheetId = resolvedSubId;
+        existingSheetIds.add(resolvedSubId);
+
+        const raw = targetSheet?.getSheet ? targetSheet.getSheet() : targetSheet?._worksheet || targetSheet;
+        if (raw?.setRowCount) raw.setRowCount(sheetRowCount);
+        if (raw?.setColumnCount) raw.setColumnCount(this.logicalColumnCount);
+        if (targetSheet?.setName) targetSheet.setName(sheetName);
+        else if (raw?.setName) raw.setName(sheetName);
+
+        try {
+          await this.univerAPI.executeCommand('sheet.mutation.set-worksheet-row-count', {
+            unitId: this.unitId,
+            subUnitId: resolvedSubId,
+            rowCount: sheetRowCount,
+          });
+          await this.univerAPI.executeCommand('sheet.mutation.set-worksheet-col-count', {
+            unitId: this.unitId,
+            subUnitId: resolvedSubId,
+            colCount: this.logicalColumnCount,
+          });
+        } catch {}
+
+        if (hasHeaders) {
+          try {
+            await this.univerAPI.executeCommand(
+              'sheet.mutation.set-range-values',
+              {
+                unitId: this.unitId,
+                subUnitId: resolvedSubId,
+                cellValue: { 0: headerCells },
+              },
+              { onlyLocal: true, fromCalculationPatch: true, fromFormula: true }
+            );
+          } catch {}
+        }
+      }
+    }
+
+    // Remove any excess sheets from previous datasets or queries (e.g. going from 3 sheets to 1 sheet)
+    const validSubIds = new Set(partitions.map((p) => p.sheetId));
+    const allCurrentSheets = wb?.getSheets ? wb.getSheets() : [];
+    for (const sheet of allCurrentSheets) {
+      const sId = sheet.getSheetId ? sheet.getSheetId() : sheet.id;
+      if (sId && sId !== this.subUnitId && !validSubIds.has(sId)) {
+        try {
+          if (wb.deleteSheet) {
+            wb.deleteSheet(sheet);
+          } else {
+            await this.univerAPI.executeCommand('sheet.mutation.remove-sheet', {
+              unitId: this.unitId,
+              subUnitId: sId,
+            });
+          }
+        } catch {}
+      }
+    }
+
+    // Ensure primary sheet (Sheet1) remains the active sheet initially
+    if (partitions[0]?.sheetId) {
+      this.subUnitId = partitions[0].sheetId;
+      try {
+        if (wb.setActiveSheet) {
+          wb.setActiveSheet(partitions[0].sheetId);
+        }
+      } catch {}
+    }
+
+    this.ready = true;
+  }
+
+  /**
    * Mounts virtual sheet with logical dimensions for 4M+ rows.
+   * If rowCount > ROWS_PER_VIRTUAL_SHEET (4,000,000), automatically partitions into 4M virtual sheets.
    */
   public async mountVirtualSheet(metadata: OPFSMetadata): Promise<void> {
     if (!this.syncActiveSheet()) {
       throw new Error('Univer workbook or active sheet not available.');
+    }
+
+    if (metadata.rowCount > ROWS_PER_VIRTUAL_SHEET) {
+      const sheetCount = Math.max(1, Math.ceil(metadata.rowCount / ROWS_PER_VIRTUAL_SHEET));
+      const partitions: VirtualSheetPartition[] = [];
+      for (let s = 0; s < sheetCount; s++) {
+        const startRow = s * ROWS_PER_VIRTUAL_SHEET;
+        const endRow = Math.min(metadata.rowCount - 1, (s + 1) * ROWS_PER_VIRTUAL_SHEET - 1);
+        const rowCount = Math.max(0, endRow - startRow + 1);
+        partitions.push({
+          sheetId: `sheet-${s + 1}`,
+          sheetIndex: s,
+          startRow,
+          endRow,
+          rowCount,
+        });
+      }
+      return this.mountVirtualSheets(partitions, metadata.columnCount, metadata.headers);
     }
 
     const wb = this.univerAPI.getActiveWorkbook();
@@ -75,11 +333,9 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
 
     this.headers = metadata.headers || [];
     const hasHeaders = this.headers.length > 0;
-    // Logical rows: data rows + 1 header row if headers exist
     this.logicalRowCount = metadata.rowCount + (hasHeaders ? 1 : 0);
     this.logicalColumnCount = Math.max(26, metadata.columnCount);
 
-    // Set logical row and col count on worksheet
     if (rawSheet.setRowCount) {
       rawSheet.setRowCount(this.logicalRowCount);
     }
@@ -87,7 +343,6 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
       rawSheet.setColumnCount(this.logicalColumnCount);
     }
 
-    // Try executing mutations so Univer internal layout models update
     try {
       await this.univerAPI.executeCommand('sheet.mutation.set-worksheet-row-count', {
         unitId: this.unitId,
@@ -99,18 +354,15 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
         subUnitId: this.subUnitId,
         colCount: this.logicalColumnCount,
       });
-    } catch {
-      // Direct rawSheet.setRowCount is sufficient
-    }
+    } catch {}
 
-    // Populate header row 0 if headers exist
     if (hasHeaders) {
       const headerCells: Record<number, { v: string; t: number; s?: any }> = {};
       for (let c = 0; c < this.headers.length; c++) {
         headerCells[c] = {
           v: this.headers[c],
-          t: 1, // string
-          s: { bl: 1 }, // bold
+          t: 1,
+          s: { bl: 1 },
         };
       }
 
@@ -125,7 +377,6 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
       );
     }
 
-    // Invalidate render skeleton
     try {
       const skeleton = rawSheet.getSkeleton ? rawSheet.getSkeleton() : rawSheet.sheetSkeleton;
       if (skeleton) {
@@ -143,10 +394,12 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
    */
   public async hydrateWindow(
     rows: RowSlice[],
-    userEdits: Map<string, CellEditRecord>
+    userEdits: Map<string, CellEditRecord>,
+    targetSheetId?: string
   ): Promise<void> {
     if (!this.syncActiveSheet()) return;
 
+    const targetSubId = targetSheetId || this.subUnitId;
     const hasHeaders = this.headers.length > 0;
     const headerOffset = hasHeaders ? 1 : 0;
     const cellValueMap: Record<number, Record<number, { v: any; t?: number }>> = {};
@@ -157,15 +410,14 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
       const rowObj: Record<number, { v: any; t?: number }> = {};
 
       for (let col = 0; col < slice.cells.length; col++) {
-        const editKey = `${sheetRow}_${col}`;
-        const userEdit = userEdits.get(editKey);
+        const editKey = `${targetSubId}_${sheetRow}_${col}`;
+        const userEdit = userEdits.get(editKey) || userEdits.get(`${sheetRow}_${col}`);
 
         if (userEdit) {
           rowObj[col] = { v: userEdit.value, t: typeof userEdit.value === 'number' ? 2 : 1 };
         } else {
           const rawVal = slice.cells[col];
-          // Check for formula strings like ="1234"
-          if (rawVal.startsWith('="') && rawVal.endsWith('"')) {
+          if (rawVal && rawVal.startsWith('="') && rawVal.endsWith('"')) {
             const unquoted = rawVal.slice(2, -1);
             rowObj[col] = { v: unquoted, t: 1 };
           } else {
@@ -182,12 +434,11 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
       cellValueMap[sheetRow] = rowObj;
     }
 
-    // Apply batch mutation with passivation options
     await this.univerAPI.executeCommand(
       'sheet.mutation.set-range-values',
       {
         unitId: this.unitId,
-        subUnitId: this.subUnitId,
+        subUnitId: targetSubId,
         cellValue: cellValueMap,
       },
       { onlyLocal: true, fromCalculationPatch: true, fromFormula: true }
@@ -197,18 +448,18 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
   /**
    * Evicts rows outside the visible window to keep heap <1MB.
    */
-  public async evictWindow(startRow: number, endRow: number): Promise<void> {
+  public async evictWindow(startRow: number, endRow: number, targetSheetId?: string): Promise<void> {
     if (!this.syncActiveSheet()) return;
 
     const wb = this.univerAPI.getActiveWorkbook();
-    const sheet = wb?.getActiveSheet();
+    const targetSubId = targetSheetId || this.subUnitId;
+    const sheet = wb?.getSheetBySheetId ? wb.getSheetBySheetId(targetSubId) : wb?.getActiveSheet();
     const rawSheet = sheet?.getSheet ? sheet.getSheet() : sheet?._worksheet || sheet;
     const matrix = rawSheet?.getCellMatrix?.();
 
     if (!matrix || !matrix._matrix) return;
 
     const hasHeaders = this.headers.length > 0;
-    // Never evict header row 0
     const minRow = hasHeaders ? 1 : 0;
     const clampedStart = Math.max(minRow, startRow);
 
@@ -218,6 +469,7 @@ export class UniverViewportAdapter implements IUniverViewportAdapter {
       }
     }
   }
+
 
   /**
    * Scrolls Univer canvas to targetRow smoothly.

@@ -1,16 +1,34 @@
-import React, { useState } from 'react';
-import ImportModal from './ImportModal';
-import ExportModal from './ExportModal';
-import { exportWorkbookToExcel } from '@/lib/export/excel';
-import { exportActiveSheetToCSV } from '@/lib/export/csv';
+import React, { useState } from "react";
+import ImportModal from "./ImportModal";
+import ExportModal from "./ExportModal";
+import { exportWorkbookToExcel } from "@/lib/export/excel";
+import {
+  exportActiveSheetToCSV,
+  saveServerDatasetCsvToDesktop,
+} from "@/lib/export/csv";
 
 interface SpreadsheetToolbarProps {
   univerAPI: any;
   activeFileName: string;
-  activeFileFormat: 'xlsx' | 'csv';
-  onFileImported: (filename: string, format: 'xlsx' | 'csv') => void;
+  activeFileFormat: "xlsx" | "csv";
+  onFileImported: (
+    filename: string,
+    format: "xlsx" | "csv",
+    metadata?: any,
+  ) => void;
+  onNewSheet?: () => void;
   onOpenJumpToRow?: () => void;
   datasetRowCount?: number;
+  datasetId?: string | null;
+  onOpenQueryModal?: () => void;
+  activeQuery?: {
+    queryId: string;
+    matchedRows: number;
+    description?: string;
+    queryDef?: any;
+  } | null;
+  onClearQuery?: () => void;
+  isQueryLoading?: boolean;
 }
 
 const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
@@ -18,13 +36,21 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
   activeFileName,
   activeFileFormat,
   onFileImported,
+  onNewSheet,
   onOpenJumpToRow,
   datasetRowCount,
+  datasetId,
+  onOpenQueryModal,
+  activeQuery,
+  onClearQuery,
+  isQueryLoading,
 }: SpreadsheetToolbarProps) {
   const [showImport, setShowImport] = useState(false);
   const [showExport, setShowExport] = useState(false);
-  const [savingDesktop, setSavingDesktop] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ text: string; isError?: boolean } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{
+    text: string;
+    isError?: boolean;
+  } | null>(null);
 
   const showToast = (text: string, isError = false) => {
     setToastMessage({ text, isError });
@@ -33,182 +59,344 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
     }, 5000);
   };
 
-  const handleSaveToDesktop = async () => {
-    if (!univerAPI) {
-      showToast('Mesin spreadsheet belum siap.', true);
-      return;
-    }
-
-    setSavingDesktop(true);
-
-    try {
-      let blob: Blob;
-      let targetName = activeFileName;
-
-      if (!targetName.endsWith(`.${activeFileFormat}`)) {
-        targetName += `.${activeFileFormat}`;
-      }
-
-      if (activeFileFormat === 'xlsx') {
-        blob = await exportWorkbookToExcel(univerAPI);
-      } else {
-        blob = await exportActiveSheetToCSV(univerAPI);
-      }
-
-      const formData = new FormData();
-      formData.append('file', blob, targetName);
-      formData.append('filename', targetName);
-
-      const res = await fetch('/api/desktop/save', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || 'Penyimpanan ke Desktop gagal.');
-      }
-
-      const savedName = data.filename || targetName;
-      showToast(`✓ Perubahan berhasil disimpan ke Desktop: ${savedName}`);
-    } catch (err: any) {
-      showToast(err.message || 'Gagal menyimpan file ke Desktop.', true);
-    } finally {
-      setSavingDesktop(false);
-    }
-  };
-
   const handleToggleFilter = async () => {
     if (!univerAPI) {
-      showToast('Mesin spreadsheet belum siap.', true);
+      showToast("Mesin spreadsheet belum siap.", true);
       return;
     }
     try {
-      await univerAPI.executeCommand('sheet.command.smart-toggle-filter');
+      await univerAPI.executeCommand("sheet.command.smart-toggle-filter");
     } catch (err: any) {
-      console.warn('Filter toggle error:', err);
-      showToast(err?.message || 'Gagal mengubah status filter.', true);
+      console.warn("Filter toggle error:", err);
+      showToast(err?.message || "Gagal mengubah status filter.", true);
     }
   };
 
   const handleClearFilter = async () => {
     if (!univerAPI) {
-      showToast('Mesin spreadsheet belum siap.', true);
+      showToast("Mesin spreadsheet belum siap.", true);
       return;
     }
     try {
-      await univerAPI.executeCommand('sheet.command.clear-filter-criteria');
-      showToast('✓ Filter berhasil dibersihkan');
+      await univerAPI.executeCommand("sheet.command.clear-filter-criteria");
+      showToast("✓ Filter berhasil dibersihkan");
     } catch (err: any) {
-      console.warn('Clear filter error:', err);
+      console.warn("Clear filter error:", err);
     }
   };
 
   return (
-    <div style={{ marginBottom: '16px' }}>
-      <div
+    <>
+      <header
         style={{
-          display: 'flex',
-          gap: '12px',
-          padding: '14px 18px',
-          background: '#1e293b',
-          border: '1px solid #334155',
-          borderRadius: '12px',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: "52px",
+          padding: "0 16px",
+          background: "#0f172a",
+          borderBottom: "1px solid #1e293b",
+          zIndex: 30,
+          position: "relative",
+          flexShrink: 0,
         }}
       >
-        <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '18px' }}>📊</span>
-          <strong style={{ color: '#f8fafc', fontSize: '15px', fontWeight: '700' }}>
-            Workbook Controls
-          </strong>
-          <span
-            style={{
-              padding: '5px 12px',
-              borderRadius: '20px',
-              background: 'rgba(56, 189, 248, 0.1)',
-              color: '#38bdf8',
-              fontSize: '12px',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38bdf8' }} />
-            {activeFileName}
-          </span>
-          {datasetRowCount && datasetRowCount > 0 ? (
-            <span
+        {/* Left: Brand Identity & Active File Info */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Brand Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
               style={{
-                padding: '4px 10px',
-                borderRadius: '16px',
-                background: 'rgba(99, 102, 241, 0.15)',
-                color: '#a5b4fc',
-                fontSize: '11px',
-                border: '1px solid rgba(99, 102, 241, 0.35)',
-                fontWeight: '600',
+                width: "30px",
+                height: "30px",
+                borderRadius: "8px",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 6px rgba(16, 185, 129, 0.3)",
               }}
             >
-              ⚡ {datasetRowCount.toLocaleString()} baris
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="3" y1="15" x2="21" y2="15" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <line x1="15" y1="3" x2="15" y2="21" />
+              </svg>
+            </div>
+            <span
+              style={{
+                color: "#f8fafc",
+                fontSize: "14px",
+                fontWeight: "700",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Redbox Sheet
             </span>
-          ) : null}
-        </div>
+          </div>
 
-        {/* Filter Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.6)', padding: '4px 8px', borderRadius: '8px', border: '1px solid #334155' }}>
-          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', paddingRight: '4px' }}>Filter:</span>
-          <button onClick={handleToggleFilter} style={filterBtnStyle} title="Toggle Filter rentang terpilih (Ctrl+Shift+L)">
-            ⚡ Filter
-          </button>
-          <button onClick={handleClearFilter} style={clearFilterBtnStyle} title="Hapus semua kriteria filter pada sheet aktif">
-            🧹 Clear
-          </button>
-        </div>
+          <div
+            style={{ width: "1px", height: "20px", background: "#334155" }}
+          />
 
-        {onOpenJumpToRow && (
-          <button
-            onClick={onOpenJumpToRow}
-            style={jumpBtnStyle}
-            title="Lompat ke baris spesifik di dataset besar (Ctrl+G)"
+          {/* Active File Pill */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "4px 10px",
+              borderRadius: "6px",
+              background: "rgba(30, 41, 59, 0.8)",
+              border: "1px solid #334155",
+            }}
           >
-            🔍 Lompat (Ctrl+G)
+            <span
+              style={{
+                padding: "2px 6px",
+                borderRadius: "4px",
+                background:
+                  activeFileFormat === "xlsx"
+                    ? "rgba(16, 185, 129, 0.15)"
+                    : "rgba(56, 189, 248, 0.15)",
+                color: activeFileFormat === "xlsx" ? "#34d399" : "#38bdf8",
+                fontSize: "11px",
+                fontWeight: "700",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+              }}
+            >
+              {activeFileFormat}
+            </span>
+            <span
+              style={{
+                color: "#e2e8f0",
+                fontSize: "13px",
+                fontWeight: "500",
+                maxWidth: "220px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+              title={activeFileName}
+            >
+              {activeFileName}
+            </span>
+            {datasetRowCount && datasetRowCount > 0 ? (
+              <span
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: "12px",
+                  background: "rgba(99, 102, 241, 0.15)",
+                  color: "#a5b4fc",
+                  fontSize: "11px",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                  fontWeight: "600",
+                }}
+              >
+                ⚡ {datasetRowCount.toLocaleString()} baris
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Center: Tools, Query & Filters */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Active Filter Pill if query is applied */}
+          {activeQuery && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "rgba(56, 189, 248, 0.15)",
+                border: "1px solid rgba(56, 189, 248, 0.35)",
+                padding: "4px 10px",
+                borderRadius: "8px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#38bdf8",
+                  fontWeight: "700",
+                }}
+              >
+                🔍 Filter: {activeQuery.matchedRows.toLocaleString()} baris
+              </span>
+              {onClearQuery && (
+                <button
+                  onClick={onClearQuery}
+                  style={clearFilterBtnStyle}
+                  title="Hapus filter/sort server dan kembali ke dataset penuh"
+                >
+                  ✕ Reset
+                </button>
+              )}
+            </div>
+          )}
+
+          {isQueryLoading && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "rgba(251, 191, 36, 0.12)",
+                border: "1px solid rgba(251, 191, 36, 0.3)",
+                padding: "4px 10px",
+                borderRadius: "8px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  animation: "spin-slow 1s infinite linear",
+                }}
+              >
+                ⚡
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#fbbf24",
+                  fontWeight: "600",
+                }}
+              >
+                Memproses query lazy load...
+              </span>
+            </div>
+          )}
+
+          {/* Filter & Sort Server Button */}
+          {onOpenQueryModal && (
+            <button
+              onClick={onOpenQueryModal}
+              style={{
+                ...headerBtnStyle,
+                background: activeQuery
+                  ? "rgba(56, 189, 248, 0.25)"
+                  : "rgba(30, 41, 59, 0.9)",
+                borderColor: activeQuery ? "#38bdf8" : "#334155",
+                color: activeQuery ? "#38bdf8" : "#f8fafc",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              title="Buka dialog filter dan sort server (Lazy Streaming)"
+            >
+              <span style={{ color: "#38bdf8" }}>⚡</span>
+              <span>Filter & Sort Server</span>
+            </button>
+          )}
+
+          {/* Lompat ke Baris (Ctrl+G) Button */}
+          {onOpenJumpToRow && (
+            <button
+              onClick={onOpenJumpToRow}
+              style={{
+                ...headerBtnStyle,
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              title="Lompat ke baris spesifik di spreadsheet / dataset besar (Ctrl+G)"
+            >
+              <span style={{ color: "#818cf8" }}>🔍</span>
+              <span>Lompat (Ctrl+G)</span>
+            </button>
+          )}
+
+          {/* Sheet level native filter toggle */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "rgba(30, 41, 59, 0.6)",
+              padding: "2px 4px",
+              borderRadius: "6px",
+              border: "1px solid #334155",
+            }}
+          >
+            <button
+              onClick={handleToggleFilter}
+              style={headerGhostBtnStyle}
+              title="Toggle Filter rentang terpilih pada sheet (Ctrl+Shift+L)"
+            >
+              Filter Sheet
+            </button>
+            <button
+              onClick={handleClearFilter}
+              style={headerGhostBtnStyle}
+              title="Hapus kriteria filter sheet aktif"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+
+        {/* Right: Actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {onNewSheet && (
+            <button
+              onClick={onNewSheet}
+              style={newSheetBtnStyle}
+              title="Kosongkan dan buat spreadsheet baru yang bersih"
+            >
+              📄 Lembar Baru
+            </button>
+          )}
+
+          <button
+            onClick={() => setShowImport(true)}
+            style={importBtnStyle}
+            title="Impor file Excel (.xlsx) atau CSV"
+          >
+            📥 Impor File
           </button>
-        )}
 
-        <button onClick={() => setShowImport(true)} style={importBtnStyle}>
-          📥 Import File (Excel/CSV)
-        </button>
-
-        {/* <button
-          onClick={handleSaveToDesktop}
-          disabled={savingDesktop}
-          style={quickSaveBtnStyle(savingDesktop)}
-          title="Simpan perubahan terbaru langsung ke Desktop Windows"
-        >
-          {savingDesktop ? '⏳ Menyimpan...' : '💾 Simpan ke Desktop'}
-        </button> */}
-
-        <button onClick={() => setShowExport(true)} style={exportBtnStyle}>
-          📤 Ekspor & Save
-        </button>
-      </div>
+          <button
+            onClick={() => setShowExport(true)}
+            style={exportBtnStyle}
+            title="Ekspor spreadsheet ke format Excel (.xlsx) atau CSV"
+          >
+            📤 Ekspor & Save
+          </button>
+        </div>
+      </header>
 
       {toastMessage && (
         <div
           style={{
-            marginTop: '10px',
-            padding: '12px 18px',
-            borderRadius: '8px',
-            background: toastMessage.isError ? 'rgba(127, 29, 29, 0.95)' : 'rgba(6, 78, 59, 0.95)',
-            color: toastMessage.isError ? '#fca5a5' : '#6ee7b7',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            border: toastMessage.isError ? '1px solid #991b1b' : '1px solid #047857',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+            position: "absolute",
+            top: "60px",
+            right: "20px",
+            zIndex: 100,
+            padding: "10px 16px",
+            borderRadius: "8px",
+            background: toastMessage.isError
+              ? "rgba(127, 29, 29, 0.95)"
+              : "rgba(6, 78, 59, 0.95)",
+            color: toastMessage.isError ? "#fca5a5" : "#6ee7b7",
+            fontSize: "13px",
+            fontWeight: "600",
+            border: toastMessage.isError
+              ? "1px solid #991b1b"
+              : "1px solid #047857",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(6px)",
           }}
         >
           {toastMessage.text}
@@ -229,97 +417,111 @@ const SpreadsheetToolbar = React.memo(function SpreadsheetToolbar({
           onClose={() => setShowExport(false)}
           activeFileName={activeFileName}
           activeFileFormat={activeFileFormat}
+          datasetId={datasetId}
+          datasetRowCount={datasetRowCount}
+          activeQuery={activeQuery}
         />
       )}
-    </div>
+    </>
   );
 });
 
 export default SpreadsheetToolbar;
 
-const jumpBtnStyle: React.CSSProperties = {
-  padding: '9px 15px',
-  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-  color: '#ffffff',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  fontWeight: 'bold',
-  fontSize: '13px',
-  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
-  transition: 'all 0.2s ease',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '6px',
+const headerBtnStyle: React.CSSProperties = {
+  height: "32px",
+  padding: "0 12px",
+  background: "#1e293b",
+  color: "#cbd5e1",
+  border: "1px solid #334155",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "600",
+  fontSize: "12px",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "5px",
+  transition: "all 0.15s ease",
 };
 
-const importBtnStyle: React.CSSProperties = {
-  padding: '9px 16px',
-  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-  color: '#ffffff',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  fontWeight: 'bold',
-  fontSize: '13px',
-  boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)',
-  transition: 'all 0.2s ease',
-};
-
-const quickSaveBtnStyle = (disabled: boolean): React.CSSProperties => ({
-  padding: '9px 16px',
-  background: disabled ? '#334155' : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-  color: disabled ? '#94a3b8' : '#ffffff',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: disabled ? 'not-allowed' : 'pointer',
-  fontWeight: 'bold',
-  fontSize: '13px',
-  boxShadow: disabled ? 'none' : '0 4px 14px rgba(5, 150, 105, 0.3)',
-  transition: 'all 0.2s ease',
-});
-
-const exportBtnStyle: React.CSSProperties = {
-  padding: '9px 16px',
-  background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
-  color: '#ffffff',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  fontWeight: 'bold',
-  fontSize: '13px',
-  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
-  transition: 'all 0.2s ease',
-};
-
-const filterBtnStyle: React.CSSProperties = {
-  padding: '7px 12px',
-  background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-  color: '#ffffff',
-  border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontWeight: '600',
-  fontSize: '12px',
-  boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '4px',
-  transition: 'all 0.15s ease',
+const headerGhostBtnStyle: React.CSSProperties = {
+  height: "32px",
+  padding: "0 10px",
+  background: "transparent",
+  color: "#94a3b8",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "500",
+  fontSize: "12px",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "4px",
+  transition: "all 0.15s ease",
 };
 
 const clearFilterBtnStyle: React.CSSProperties = {
-  padding: '7px 10px',
-  background: 'rgba(71, 85, 105, 0.5)',
-  color: '#cbd5e1',
-  border: '1px solid #475569',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontWeight: '500',
-  fontSize: '12px',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '4px',
-  transition: 'all 0.15s ease',
+  height: "26px",
+  padding: "0 8px",
+  background: "rgba(239, 68, 68, 0.2)",
+  color: "#fca5a5",
+  border: "1px solid rgba(239, 68, 68, 0.4)",
+  borderRadius: "5px",
+  cursor: "pointer",
+  fontWeight: "600",
+  fontSize: "11px",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "3px",
+  transition: "all 0.15s ease",
 };
 
+const newSheetBtnStyle: React.CSSProperties = {
+  height: "34px",
+  padding: "0 12px",
+  background: "rgba(51, 65, 85, 0.4)",
+  color: "#e2e8f0",
+  border: "1px solid #334155",
+  borderRadius: "7px",
+  cursor: "pointer",
+  fontWeight: "600",
+  fontSize: "12px",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "5px",
+  transition: "all 0.15s ease",
+};
+
+const importBtnStyle: React.CSSProperties = {
+  height: "34px",
+  padding: "0 14px",
+  background: "#1e293b",
+  color: "#f8fafc",
+  border: "1px solid #475569",
+  borderRadius: "7px",
+  cursor: "pointer",
+  fontWeight: "600",
+  fontSize: "13px",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  transition: "all 0.15s ease",
+  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.2)",
+};
+
+const exportBtnStyle: React.CSSProperties = {
+  height: "34px",
+  padding: "0 16px",
+  background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: "7px",
+  cursor: "pointer",
+  fontWeight: "600",
+  fontSize: "13px",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  transition: "all 0.15s ease",
+  boxShadow: "0 2px 8px rgba(37, 99, 235, 0.35)",
+};

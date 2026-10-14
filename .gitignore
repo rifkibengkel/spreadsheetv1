@@ -19,6 +19,9 @@
 # local development scratch
 /scratch/
 
+# local development storage and generated runtime data
+/storage/
+
 # Redis local persistence
 dump.rdb
 
@@ -36,7 +39,7 @@ dump.rdb
 # debug
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
+yarn-error.log
 .pnpm-debug.log
 
 # env files (can opt-in to committing if needed)
@@ -49,8 +52,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Mengabaikan semua file .md
+# Ignore all Markdown files
 *.md
 
-# Tapi JANGAN abaikan README.md
-!README.md
+# Keep root README.md
+!/README.md
